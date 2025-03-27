@@ -1,5 +1,17 @@
-{% extends 'base.html' %}
+{% extends 'base/base.html' %}
 
 {% block content %}
-    <!-- Code part!!! -->
+<form action="{% url 'inscription' %}", method="post">
+    {% csrf_token %}
+
+    <label>Nom</label>
+    <input type="text" name="username">
+    <label>Mot de passe</label>
+    <input type="password" name="password">
+    <label>Confirmer le mot de passe</label>
+    <input type="password" name="confirm_password">
+
+    <button type="submit" class="btn btn-primary">Envoer</button>
+</form>
+<p style="color: red;">{{error}}</p>
 {% endblock %}

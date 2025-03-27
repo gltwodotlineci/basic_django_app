@@ -1,5 +1,8 @@
-{% extends 'base.html' %}
+{% extends 'base/base.html' %}
 
 {% block content %}
-    <!-- Code part!!! -->
+    <h1> Welcome mr {{user.username}}!</h1>
+
+    <a href="{% url 'logout' %}">Déconnexion</a>
+
 {% endblock %}
