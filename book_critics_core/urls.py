@@ -9,4 +9,8 @@ urlpatterns = [
     path('inscription/', views.inscirption, name='inscription'),
     path('logout/', views.logout_user, name='logout'),
     path('profile/<uuid:user_id>', views.show_profile, name='profile'),
+    # Tickets
+    path('ticket/', views.ticket, name='ticket'),
+    path('create_ticket/', views.create_ticket, name='create_ticket'),
+    path('tickets/', views.all_tickets, name='tickets'),
 ]

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import CustomUser
+from .models import CustomUser, Ticket, Review
 from django.contrib.auth import login, logout
 
 def home(request):
@@ -63,3 +63,63 @@ def login_user(request):
 def logout_user(request):
     logout(request)
     return redirect("home")
+
+def ticket(request):
+    # Check if the user is signed in
+    if request.user.is_anonymous:
+        return redirect('signup')
+    user = request.user
+    return render(request, 'tickets/ticket.html',
+                  context={'user': user}
+                  )
+
+def create_ticket(request):
+    # Check if the user is signed in
+    if request.user.is_anonymous:
+        return redirect('signup')
+    
+    user = request.user
+    data = request.POST
+    title = data.get('title')
+
+    # Creating the ticket
+    ticket = Ticket.objects.create(user=user, title=title)
+    
+    return render(request, 'tickets/tickets.html',
+                  context={'ticket': ticket}
+                  )
+
+def all_tickets(request):
+    # Check if the user is signed in
+    if request.user.is_anonymous:
+        return redirect('signup')
+    
+    tickets = Ticket.objects.all().order_by('-time_created')
+    
+    return render(request, 'tickets/all_tickets.html',
+                  context={'tickets': tickets}
+                  )
+
+
+def create_review(request, ticket_id):
+    # Check if the user is signed in
+    if request.user.is_anonymous:
+        return redirect('signup')
+    
+    ticket = get_object_or_404(Ticket, uuid=ticket_id)
+    
+    data = request.POST
+    # rating = data.get('rating')
+    headline = data.get('headline')
+    body = data.get('body')
+
+    # Creating the review
+    review = Review.objects.create(user=request.user,
+                                   ticket=ticket,
+                                   headline=headline,
+                                   body=body
+                                   )
+    
+    return render(request, 'tickets/review.html',
+                  context={'review': review}
+                  )

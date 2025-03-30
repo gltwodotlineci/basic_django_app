@@ -5,4 +5,12 @@
 
     <a href="{% url 'logout' %}">Déconnexion</a>
 
+    <h2>Press the button if you want to create a ticket</h2>
+    <form action="{% url 'ticket' %}" method="get">
+        <button type="submit" class="btn btn-primary"
+            data-bs-toggle="modal" data-bs-target="#exampleModal"
+        >
+            Create Ticket
+        </button>
+    </form>
 {% endblock %}
