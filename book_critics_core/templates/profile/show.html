@@ -6,11 +6,27 @@
     <a href="{% url 'logout' %}">Déconnexion</a>
 
     <h2>Press the button if you want to create a ticket</h2>
-    <form action="{% url 'ticket' %}" method="get">
-        <button type="submit" class="btn btn-primary"
-            data-bs-toggle="modal" data-bs-target="#exampleModal"
-        >
-            Create Ticket
-        </button>
-    </form>
+        <div class="row">
+            <div class="col-6">
+                <a href="{% url 'ticket' %}">
+                    <button type="submit" class="btn btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    >
+                        Create ticket
+                    </button>
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{% url 'tickets' %}">
+                    <button type="submit" class="btn btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    >
+                        See all tickets
+                    </button>
+                </a>
+            </div>
+        </div>
+
+    <div class="col-6">
+
 {% endblock %}

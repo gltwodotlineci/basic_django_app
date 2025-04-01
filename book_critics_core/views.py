@@ -2,12 +2,19 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import CustomUser, Ticket, Review
 from django.contrib.auth import login, logout
 
+
 def home(request):
+    if request.user.is_authenticated:
+        return redirect('profile')
     return render(request, 'base/home.html')
 
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect('profile')
+
     return render(request, 'acces/signup.html')
+
 
 def inscirption(request):
     data = request.POST
@@ -30,16 +37,17 @@ def inscirption(request):
     return render(request, 'profile/show.html', context=context)
 
 
-def show_profile(request, user_id):
+def show_profile(request):
     # Check if the user is signed in
     if request.user.is_anonymous:
         return redirect('signup')
     
-    user = get_object_or_404(CustomUser, uuid=user_id)
+    user = request.user
 
     return render(request, 'profile/show.html',
                   context={'user': user}
                   )
+
 
 def login_user(request):
     data = request.POST
@@ -83,10 +91,10 @@ def create_ticket(request):
     title = data.get('title')
 
     # Creating the ticket
-    ticket = Ticket.objects.create(user=user, title=title)
-    
-    return render(request, 'tickets/tickets.html',
-                  context={'ticket': ticket}
+    Ticket.objects.create(user=user, title=title)
+    tickets = Ticket.objects.all().order_by('-time_created')
+    return render(request, 'tickets/all_tickets.html',
+                  context={'tickets': tickets}
                   )
 
 def all_tickets(request):
@@ -96,6 +104,9 @@ def all_tickets(request):
     
     tickets = Ticket.objects.all().order_by('-time_created')
     
+    for ticket in tickets:
+        print("Ticket --- ", ticket.review.all())
+
     return render(request, 'tickets/all_tickets.html',
                   context={'tickets': tickets}
                   )
@@ -121,5 +132,32 @@ def create_review(request, ticket_id):
                                    )
     
     return render(request, 'tickets/review.html',
-                  context={'review': review}
+                  context={'ticket': ticket,'review': review}
                   )
+
+
+def create_review(request):
+    if request.user.is_anonymous:
+        return redirect('signup')
+    user = request.user
+    data = request.POST
+    ticket_id = data.get('ticket_id')
+    headline_review = data.get('headline-review')
+    body_review = data.get('content-review')
+    rating = data.get('rating')
+    try:
+        ticket = Ticket.objects.get(uuid=ticket_id)
+        review = Review.objects.create(user=user,
+                                       ticket=ticket,
+                                       headline=headline_review,
+                                       body=body_review,
+                                       rating=rating)
+        return render(request, 'tickets/all_tickets.html',
+                      context={'ticket': ticket,
+                              'review': review,
+                              }
+                      )
+    except Ticket.DoesNotExist:
+        return render(request, 'tickets/all_tickets.html',
+                      context={'error': 'Ce billet n\'existe pas'}
+                      )

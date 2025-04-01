@@ -1,0 +1,13 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1> Welcome to Ticket creatin</h1>
+<h3>{{user.username}}</h3>
+<form action="{% url 'create_ticket' %}" method="post">
+    {% csrf_token %}
+    <label>Title</label>
+    <input type="text" name="title" required>
+    <button type="submit" class="btn btn-primary">Create Ticket</button>
+
+{% endblock %}

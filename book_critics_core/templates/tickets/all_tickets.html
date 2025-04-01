@@ -1,0 +1,36 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<a href="{% url 'profile' %}">
+    <i class="fa fa-solid fa-user"></i>
+</a>
+    <h1> All Tickets</h1>
+    {% for ticket in tickets %}
+        <p>Created by: {{ticket.user.username}} - {{ticket.title}} </p>
+        {% for review in ticket.review.all %}
+            {% if review %}
+                <p>{{review.headline}} - {{review.body}} -
+                     Rated {{review.rating}}
+                </p>
+            {% else %}
+                <p>No review yet</p>
+            {% endif %}
+        {% endfor %}
+        <form action="{% url 'create_review' %}" method="post">
+            {% csrf_token %}
+            <label>Headline review</label>
+            <input type="text" name="headline-review">
+            <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
+            <textarea name="content-review"></textarea>
+            <input type="number" name="rating" min="0" max="5">
+            <button type="submit" class="btn btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    >
+                Ajouter
+            </button>
+
+        </form>
+    {% endfor %}
+    <a href="{% url 'logout' %}">Déconnexion</a>
+{% endblock %}
