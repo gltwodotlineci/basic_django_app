@@ -36,6 +36,16 @@ def inscirption(request):
     context = {'user': user}
     return render(request, 'profile/show.html', context=context)
 
+
+# sending followers list
+def send_followers_list(followed_usr_lst: list, actual_usr)-> list:
+    followed_usr_obj = UserFollows.objects.filter(
+        user=actual_usr)
+    for followed_user in followed_usr_obj:
+        followed_usr_lst.append(followed_user.followed_user.username)
+
+    return followed_usr_lst
+
 def all_users(request):
     # Check if the user is signed in
     if request.user.is_anonymous:
@@ -43,16 +53,18 @@ def all_users(request):
     
     actual_user = request.user
     users = CustomUser.objects.all()
+
+    followed_user_lst = []
     try:
-        followed_user_obj = UserFollows.objects.get(user=actual_user)
-        followed_user = CustomUser.objects.get(pk=followed_user_obj.followed_user_id)
+        followed_user_lst = send_followers_list(followed_user_lst, actual_user)
     except UserFollows.DoesNotExist:
         followed_user = None
+
 
     return render(request, 'profile/all_users.html',
                   context={'users': users,
                            'actual_user': actual_user,
-                           'followed_user': followed_user
+                           'followed_user': followed_user_lst
                            },
                   )
 
@@ -70,24 +82,69 @@ def show_profile(request):
 
 
 def follow_user(request):
+    # Check if the user is signed in
+    if request.user.is_anonymous:
+        return redirect('signup')
+
     # Check if user you want to follow exists
     data = request.POST
     user_id = data.get('user_id')
     # Actual user
     actual_user = request.user
+    users = CustomUser.objects.all()
+    followed_user_lst = []
     try:
         user_follow = CustomUser.objects.get(uuid=user_id)
         UserFollows.objects.create(user=actual_user,
                                     followed_user=user_follow)
+        
+        followed_user_lst = send_followers_list(followed_user_lst, actual_user)
+        
+        return render(request, 'profile/all_users.html',
+                    context={'users': users,
+                             'actual_user': actual_user,
+                             'followed_user': followed_user_lst
+                            }
+                        )
+    
     except CustomUser.DoesNotExist:
         users = CustomUser.objects.all()
         return render(request, 'profile/all_users.html',
                     context={'error': 'Error: this user does not exist',
-                            'users': users
+                            'users': users,
+                            'followed_user': followed_user_lst
                             }
                         )
 
+# unfollow an actual user
+def unfollow_user(request):
+    # Check if the user is signed in
+    if request.user.is_anonymous:
+        return redirect('signup')
+    actual_user = request.user
+    data = request.POST
+    followed = data.get('user_id')
 
+    followed_user = UserFollows.objects.filter(
+        user=actual_user,
+        followed_user=followed
+    )
+    followed_user.delete()
+    users = CustomUser.objects.all()
+    followed_user_lst = []
+    try:
+        followed_user_lst = send_followers_list(followed_user_lst, actual_user)
+    except UserFollows.DoesNotExist:
+        followed_user = None
+    return render(request, 'profile/all_users.html',
+                    context={'users': users,
+                             'actual_user': actual_user,
+                             'followed_user': followed_user_lst
+                            }
+                )
+
+
+# Login user
 def login_user(request):
     data = request.POST
     username = data.get('username')

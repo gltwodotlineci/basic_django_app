@@ -10,7 +10,9 @@ urlpatterns = [
     path('logout/', views.logout_user, name='logout'),
     path('profile/', views.show_profile, name='profile'),
     path('all_users/', views.all_users, name='all_users'),
+    # Following process
     path('follow_user/', views.follow_user, name='follow_user'),
+    path('unfollow_user/', views.unfollow_user, name='unfollow_user'),
     # Tickets
     path('ticket/', views.ticket, name='ticket'),
     path('create_ticket/', views.create_ticket, name='create_ticket'),

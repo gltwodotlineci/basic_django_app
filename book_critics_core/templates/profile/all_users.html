@@ -9,9 +9,10 @@
 {% for user in users %}
     {% if actual_user != user %}
         <h4> {{user.username}}</h4>
-        <h5> 
-            {% if user.username == followed_user.username %}
-                <form action="", method="post">
+
+        <h5>
+            {% if user.username in followed_user %}
+                <form action="{% url 'unfollow_user' %}", method="post">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" value="{{user.pk}}">
                     <button type="submit" class="btn btn-primary">Unfollow</button>
@@ -28,4 +29,5 @@
 
     {% endif %}
 {% endfor %}
+
 {% endblock %}
