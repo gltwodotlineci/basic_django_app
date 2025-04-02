@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import CustomUser, Ticket, Review
+from .models import CustomUser, Ticket, Review, UserFollows
 from django.contrib.auth import login, logout
 
 
@@ -20,21 +20,41 @@ def inscirption(request):
     data = request.POST
     username = data.get('username')
     password = data.get('password')
-    pasword2 = data.get('confirm_password')
+    password2 = data.get('confirm_password')
+    email = data.get('email')
     
     # Verifying the password or the user existence
     try:
-        user = CustomUser.objects.get(username=username)
-        if user:
+        if CustomUser.objects.get(username=username):
             return render(request, 'acces/signup.html', context={'error': 'Cet utilisateur existe déjà'})
     except CustomUser.DoesNotExist:
-        if password != pasword2:
+        if password != password2:
             return render(request, 'acces/signup.html', context={'error': 'Les mots de passe ne correspondent pas'})
 
-    user = CustomUser.objects.create_user(username=username, password=password)
+    user = CustomUser.objects.create_user(username=username, password=password, email=email)
 
     context = {'user': user}
     return render(request, 'profile/show.html', context=context)
+
+def all_users(request):
+    # Check if the user is signed in
+    if request.user.is_anonymous:
+        return redirect('signup')
+    
+    actual_user = request.user
+    users = CustomUser.objects.all()
+    try:
+        followed_user_obj = UserFollows.objects.get(user=actual_user)
+        followed_user = CustomUser.objects.get(pk=followed_user_obj.followed_user_id)
+    except UserFollows.DoesNotExist:
+        followed_user = None
+
+    return render(request, 'profile/all_users.html',
+                  context={'users': users,
+                           'actual_user': actual_user,
+                           'followed_user': followed_user
+                           },
+                  )
 
 
 def show_profile(request):
@@ -47,6 +67,25 @@ def show_profile(request):
     return render(request, 'profile/show.html',
                   context={'user': user}
                   )
+
+
+def follow_user(request):
+    # Check if user you want to follow exists
+    data = request.POST
+    user_id = data.get('user_id')
+    # Actual user
+    actual_user = request.user
+    try:
+        user_follow = CustomUser.objects.get(uuid=user_id)
+        UserFollows.objects.create(user=actual_user,
+                                    followed_user=user_follow)
+    except CustomUser.DoesNotExist:
+        users = CustomUser.objects.all()
+        return render(request, 'profile/all_users.html',
+                    context={'error': 'Error: this user does not exist',
+                            'users': users
+                            }
+                        )
 
 
 def login_user(request):

@@ -1,0 +1,31 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<a href="{% url 'profile' %}">
+    <i class="fa fa-solid fa-user"></i>
+</a>
+<h1> The list of all users is: </h1>
+{% for user in users %}
+    {% if actual_user != user %}
+        <h4> {{user.username}}</h4>
+        <h5> 
+            {% if user.username == followed_user.username %}
+                <form action="", method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{user.pk}}">
+                    <button type="submit" class="btn btn-primary">Unfollow</button>
+                </form>
+            {% else %}
+            <form action="{% url 'follow_user' %}", method="post">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{user.pk}}">
+                <button type="submit" class="btn btn-primary">follow</button>
+            </form>
+            {% endif %}
+
+        </h5>
+
+    {% endif %}
+{% endfor %}
+{% endblock %}
