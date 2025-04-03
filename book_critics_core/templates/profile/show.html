@@ -39,11 +39,16 @@
         <div class="row">
             <div class="col-6">
                 <h3> My followers</h3>
+                {% for follower in followers %}
+                    <h5>{{follower}}</h5>
+                {% endfor %}
 
             </div>
             <div class="col-6">
                 <h3> Following</h3>
-
+                {% for followed in followed_user %}
+                    <h5>{{followed}}</h5>
+                {% endfor %}
             </div>
         </div>
 

@@ -46,6 +46,7 @@ def send_followers_list(followed_usr_lst: list, actual_usr)-> list:
 
     return followed_usr_lst
 
+
 def all_users(request):
     # Check if the user is signed in
     if request.user.is_anonymous:
@@ -76,8 +77,25 @@ def show_profile(request):
     
     user = request.user
 
+    followed_users = UserFollows.objects.filter(user=user)
+    followers = UserFollows.objects.filter(followed_user=user)
+    followed_user_lst = []
+    followers_lst = []
+    # Get the list of followed users
+    for followed_user in followed_users:
+        followed_user_lst.append(followed_user.followed_user.username)
+
+    # Get the list of followers
+    for follower in followers:
+        followers_lst.append(follower.user.username)
+
+    print("Followers: ", followers_lst)
+    print("list followers", followed_user_lst)
     return render(request, 'profile/show.html',
-                  context={'user': user}
+                  context={'user': user,
+                           'followed_user': followed_user_lst,
+                           "followers": followers_lst
+                           }
                   )
 
 
