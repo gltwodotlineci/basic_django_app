@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=100, unique=True, verbose_name='email')
 
 
-class Ticket(models.Model):
+class Ticket(models.Model):# Ajouter champ description
     uuid = models.UUIDField(primary_key=True, unique=True, default=uuid4,  editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
@@ -50,7 +50,7 @@ class UserFollows(models.Model):
                              verbose_name='utilisateur'
                              )
     
-    class Meta:
+    class Meta: # 'Unique together' à l'utiliser
         constraints = [
             models.UniqueConstraint(fields=['user', 'followed_user'], name='unique_user_follow')
         ]

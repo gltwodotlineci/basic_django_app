@@ -11,7 +11,7 @@
         <h4> {{user.username}}</h4>
 
         <h5>
-            {% if user.username in followed_user %}
+            {% if user in followed_user %}
                 <form action="{% url 'unfollow_user' %}", method="post">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" value="{{user.pk}}">

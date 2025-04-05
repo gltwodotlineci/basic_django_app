@@ -27,27 +27,45 @@
             </div>
         </div></br>
         <div class="row">
-            <a href="{% url 'all_users' %}">
-                <button type="submit" class="btn btn-primary"
-                    data-bs-toggle="modal" data-bs-target="#exampleModal"
-                >
-                    See all users
-                </button>
-            </a>
+            <div class="col-6">
+                <a href="{% url 'my_tickets' %}">
+                    <button type="submit" class="btn btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    >
+                        See my tickets
+                    </button>
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="{% url 'all_users' %}">
+                    <button type="submit" class="btn btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    >
+                        See all users
+                    </button>
+                </a>
+            </div>
         </div>
 
         <div class="row">
             <div class="col-6">
                 <h3> My followers</h3>
                 {% for follower in followers %}
-                    <h5>{{follower}}</h5>
+                    <h5>{{follower.username}}</h5>
+                    <a href="http://localhost:8000/other_profile/{{follower.pk}}">
+                        <button type="submit" class="btn btn-primary">See profile</button>
+                    </a>
+
                 {% endfor %}
 
             </div>
             <div class="col-6">
                 <h3> Following</h3>
                 {% for followed in followed_user %}
-                    <h5>{{followed}}</h5>
+                    <h5>{{followed.username}}</h5>
+                    <a href="http://localhost:8000/other_profile/{{user.pk}}">
+                        <button type="submit" class="btn btn-primary">See profile</button>
+                    </a>
                 {% endfor %}
             </div>
         </div>

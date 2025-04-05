@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import CustomUser, Ticket, Review, UserFollows
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 
 
 def home(request):
@@ -16,7 +17,7 @@ def signup(request):
     return render(request, 'acces/signup.html')
 
 
-def inscirption(request):
+def inscription(request):# inscription avec formulaire
     data = request.POST
     username = data.get('username')
     password = data.get('password')
@@ -38,29 +39,23 @@ def inscirption(request):
 
 
 # sending followers list
-def send_followers_list(followed_usr_lst: list, actual_usr)-> list:
-    followed_usr_obj = UserFollows.objects.filter(
-        user=actual_usr)
-    for followed_user in followed_usr_obj:
-        followed_usr_lst.append(followed_user.followed_user.username)
+def send_followers_list(actual_usr: CustomUser)-> list[str]:
+    followers_obj = actual_usr.following.all()
+    followed_usr_lst = CustomUser.objects.filter(pk__in=followers_obj.values_list(
+        'followed_user', flat=True))
 
     return followed_usr_lst
 
 
+@login_required(login_url='http://localhost:8000')
 def all_users(request):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
-    
     actual_user = request.user
     users = CustomUser.objects.all()
 
-    followed_user_lst = []
     try:
-        followed_user_lst = send_followers_list(followed_user_lst, actual_user)
+        followed_user_lst = send_followers_list(actual_user)
     except UserFollows.DoesNotExist:
-        followed_user = None
-
+        followed_user_lst = []
 
     return render(request, 'profile/all_users.html',
                   context={'users': users,
@@ -69,16 +64,41 @@ def all_users(request):
                            },
                   )
 
-
-def show_profile(request):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
-    
+@login_required(login_url='http://localhost:8000')
+def show_profile(request):   
     user = request.user
-
     followed_users = UserFollows.objects.filter(user=user)
     followers = UserFollows.objects.filter(followed_user=user)
+    followed_user_lst = []
+    followers_lst = []
+    # Get the list of followed users
+    for followed_user in followed_users:
+        followed_user_lst.append(followed_user.followed_user)
+
+    # Get the list of followers
+    for follower in followers:
+        followers_lst.append(follower.user)
+
+    return render(request, 'profile/show.html',
+                  context={'user': user,
+                           'followed_user': followed_user_lst,
+                           "followers": followers_lst
+                           }
+                  )
+
+
+# Show all spcecific user
+@login_required(login_url='http://localhost:8000')
+def other_profile(request, user_id):
+
+    try:
+        other_user = CustomUser.objects.get(uuid=user_id)
+        actual_user = request.user
+    except CustomUser.DoesNotExist:
+        return render(request, 'base/home.html', context={'error': 'Cet utilisateur n\'existe pas'})    
+
+    followed_users = UserFollows.objects.filter(user=other_user)
+    followers = UserFollows.objects.filter(followed_user=other_user)
     followed_user_lst = []
     followers_lst = []
     # Get the list of followed users
@@ -89,34 +109,28 @@ def show_profile(request):
     for follower in followers:
         followers_lst.append(follower.user.username)
 
-    print("Followers: ", followers_lst)
-    print("list followers", followed_user_lst)
     return render(request, 'profile/show.html',
-                  context={'user': user,
+                  context={'user': other_user,
                            'followed_user': followed_user_lst,
-                           "followers": followers_lst
-                           }
-                  )
+                           "followers": followers_lst,
+                           'actual_user': actual_user
+                           })
 
 
+@login_required(login_url='http://localhost:8000')
 def follow_user(request):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
-
     # Check if user you want to follow exists
     data = request.POST
     user_id = data.get('user_id')
     # Actual user
     actual_user = request.user
     users = CustomUser.objects.all()
-    followed_user_lst = []
     try:
         user_follow = CustomUser.objects.get(uuid=user_id)
         UserFollows.objects.create(user=actual_user,
                                     followed_user=user_follow)
         
-        followed_user_lst = send_followers_list(followed_user_lst, actual_user)
+        followed_user_lst = send_followers_list(actual_user)
         
         return render(request, 'profile/all_users.html',
                     context={'users': users,
@@ -126,6 +140,7 @@ def follow_user(request):
                         )
     
     except CustomUser.DoesNotExist:
+        followed_user_lst = []
         users = CustomUser.objects.all()
         return render(request, 'profile/all_users.html',
                     context={'error': 'Error: this user does not exist',
@@ -134,11 +149,10 @@ def follow_user(request):
                             }
                         )
 
+
 # unfollow an actual user
+@login_required(login_url='http://localhost:8000')
 def unfollow_user(request):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
     actual_user = request.user
     data = request.POST
     followed = data.get('user_id')
@@ -149,10 +163,10 @@ def unfollow_user(request):
     )
     followed_user.delete()
     users = CustomUser.objects.all()
-    followed_user_lst = []
     try:
-        followed_user_lst = send_followers_list(followed_user_lst, actual_user)
+        followed_user_lst = send_followers_list(actual_user)
     except UserFollows.DoesNotExist:
+        followed_user_lst = []
         followed_user = None
     return render(request, 'profile/all_users.html',
                     context={'users': users,
@@ -186,20 +200,16 @@ def logout_user(request):
     logout(request)
     return redirect("home")
 
+
+@login_required(login_url='http://localhost:8000')
 def ticket(request):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
     user = request.user
     return render(request, 'tickets/ticket.html',
                   context={'user': user}
                   )
 
+@login_required(login_url='http://localhost:8000')
 def create_ticket(request):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
-    
     user = request.user
     data = request.POST
     title = data.get('title')
@@ -211,26 +221,28 @@ def create_ticket(request):
                   context={'tickets': tickets}
                   )
 
+
+@login_required(login_url='http://localhost:8000')
 def all_tickets(request):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
-    
     tickets = Ticket.objects.all().order_by('-time_created')
-    
-    for ticket in tickets:
-        print("Ticket --- ", ticket.review.all())
 
     return render(request, 'tickets/all_tickets.html',
                   context={'tickets': tickets}
                   )
 
 
+@login_required(login_url='http://localhost:8000')
+def my_tickets(request):
+    user = request.user
+    tickets = Ticket.objects.filter(user=user).order_by('-time_created')
+
+    return render(request, 'tickets/all_tickets.html',
+                  context={'tickets': tickets}
+                  )
+
+
+@login_required(login_url='http://localhost:8000')
 def create_review(request, ticket_id):
-    # Check if the user is signed in
-    if request.user.is_anonymous:
-        return redirect('signup')
-    
     ticket = get_object_or_404(Ticket, uuid=ticket_id)
     
     data = request.POST
@@ -250,9 +262,8 @@ def create_review(request, ticket_id):
                   )
 
 
+@login_required(login_url='http://localhost:8000')
 def create_review(request):
-    if request.user.is_anonymous:
-        return redirect('signup')
     user = request.user
     data = request.POST
     ticket_id = data.get('ticket_id')
