@@ -2,13 +2,15 @@
 {% load static %}
 
 {% block content %}
-    <h>Connectez-vous</h3>
-    <form action="{% url 'login' %}", method="post">
+    <h>Login</h3>
+    <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
-        <input type="text" name="username" placeholder="Nom d'utilisateur" required/>
-        <input type="password" name="password" placeholder="Mot de passe" required/>
+        {{form}}
 
-        <button type="submit" class="btn btn-primary">Se connecter</button>
+        {{ form.non_field_errors }}
+        {{ form.username.errors }}
+        {{ form.password.errors }}
+        <button type="submit" class="btn btn-primary">Login</button>
     </form>
 
     <h>Inscrivez-vous Miantenant</h3>

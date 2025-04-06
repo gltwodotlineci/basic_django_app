@@ -2,40 +2,63 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import CustomUser, Ticket, Review, UserFollows
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from .forms import LoginForm, SignupForm
 
 
 def home(request):
     if request.user.is_authenticated:
         return redirect('profile')
-    return render(request, 'base/home.html')
+
+    login_form = LoginForm(request.POST or None)
+    return render(request, 'base/home.html',
+                      context={'form': login_form})
+    
+
+# Login user
+def login_user(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            return render(request, 'profile/show.html',
+                        context={'user': username})
+        
+    form = LoginForm(request.POST or None)
+    return render(request, 'base/home.html',
+                  context={'form': form}
+                  )
 
 
+# Inscription page
 def signup(request):
     if request.user.is_authenticated:
         return redirect('profile')
 
-    return render(request, 'acces/signup.html')
+    signup_form = SignupForm(request.POST or None)
+    return render(request, 'acces/signup.html',
+                  context={'signup_form': signup_form}
+                  )
 
 
-def inscription(request):# inscription avec formulaire
-    data = request.POST
-    username = data.get('username')
-    password = data.get('password')
-    password2 = data.get('confirm_password')
-    email = data.get('email')
-    
-    # Verifying the password or the user existence
-    try:
-        if CustomUser.objects.get(username=username):
-            return render(request, 'acces/signup.html', context={'error': 'Cet utilisateur existe déjà'})
-    except CustomUser.DoesNotExist:
-        if password != password2:
-            return render(request, 'acces/signup.html', context={'error': 'Les mots de passe ne correspondent pas'})
+def inscription(request):
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
 
-    user = CustomUser.objects.create_user(username=username, password=password, email=email)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            email = form.cleaned_data['email']
+            user = CustomUser.objects.create_user(username=username,
+                                                   password=password,
+                                                    email=email)
 
-    context = {'user': user}
-    return render(request, 'profile/show.html', context=context)
+            context = {'user': user}
+            return render(request, 'profile/show.html', context=context)
+
+    form = SignupForm(request.POST or None)
+    return render(request, 'acces/signup.html',
+                context={'signup_form': form}
+                )
 
 
 # sending followers list
@@ -176,25 +199,6 @@ def unfollow_user(request):
                 )
 
 
-# Login user
-def login_user(request):
-    data = request.POST
-    username = data.get('username')
-    password = data.get('password')
-    try:
-        user = CustomUser.objects.get(username=username)
-        if user.check_password(password):
-            login(request, user)
-            return render(request, 'profile/show.html',
-                           context={'user': user})
-        
-        return render(request, 'base/home.html', context={'error': 'Mot de passe incorrect'})
-    
-    except CustomUser.DoesNotExist:
-        return render(request, 'acces/login.html', context={'error': 'Cet utilisateur n\'existe pas'})
-    
-    return render(request, 'acces/login.html')
-
 
 def logout_user(request):
     logout(request)
@@ -207,6 +211,7 @@ def ticket(request):
     return render(request, 'tickets/ticket.html',
                   context={'user': user}
                   )
+
 
 @login_required(login_url='http://localhost:8000')
 def create_ticket(request):
