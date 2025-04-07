@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import CustomUser, Ticket, Review, UserFollows
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from .forms import LoginForm, SignupForm
+from .forms import LoginForm, SignupForm, TicketForm, ReviewForm
 
 
 def home(request):
@@ -199,7 +199,6 @@ def unfollow_user(request):
                 )
 
 
-
 def logout_user(request):
     logout(request)
     return redirect("home")
@@ -207,32 +206,59 @@ def logout_user(request):
 
 @login_required(login_url='http://localhost:8000')
 def ticket(request):
+    ticket_form = TicketForm(request.POST or None)
     user = request.user
+    ticket_form = TicketForm(initial={'username': user.username})
     return render(request, 'tickets/ticket.html',
-                  context={'user': user}
+                  context={'form': ticket_form}
                   )
 
 
 @login_required(login_url='http://localhost:8000')
 def create_ticket(request):
-    user = request.user
-    data = request.POST
-    title = data.get('title')
-
-    # Creating the ticket
-    Ticket.objects.create(user=user, title=title)
-    tickets = Ticket.objects.all().order_by('-time_created')
-    return render(request, 'tickets/all_tickets.html',
+    if request.method == 'POST':
+        form = TicketForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            # description = form.cleaned_data['description']
+            # image = form.cleaned_data['image']
+            username = form.cleaned_data['username']
+            user = CustomUser.objects.get(username=username)
+            # Creating the ticket
+            Ticket.objects.create(user=user, title=title)
+            tickets = Ticket.objects.all().order_by('-time_created')
+            return render(request, 'tickets/all_tickets.html',
                   context={'tickets': tickets}
                   )
+    ticket_form = TicketForm(request.POST or None)
+    user = request.user
+    ticket_form = TicketForm(initial={'username': user.username})
+
+    return render(request, 'tickets/ticket.html',
+                  context={
+                    'form': ticket_form,
+                    }
+                  )
+    
+
+# Factorizing review form
+def refactor_review_form(request, user: CustomUser):
+    review_form = ReviewForm(request.POST or None)
+    review_form = ReviewForm(initial={'username': user.username})
+    return review_form
 
 
 @login_required(login_url='http://localhost:8000')
 def all_tickets(request):
+    user = request.user
+    review_form = refactor_review_form(request, user)
     tickets = Ticket.objects.all().order_by('-time_created')
 
     return render(request, 'tickets/all_tickets.html',
-                  context={'tickets': tickets}
+                  context={
+                        'tickets': tickets,
+                        'form': review_form,
+                        }
                   )
 
 
@@ -247,47 +273,46 @@ def my_tickets(request):
 
 
 @login_required(login_url='http://localhost:8000')
-def create_review(request, ticket_id):
-    ticket = get_object_or_404(Ticket, uuid=ticket_id)
-    
-    data = request.POST
-    # rating = data.get('rating')
-    headline = data.get('headline')
-    body = data.get('body')
-
-    # Creating the review
-    review = Review.objects.create(user=request.user,
-                                   ticket=ticket,
-                                   headline=headline,
-                                   body=body
-                                   )
-    
-    return render(request, 'tickets/review.html',
-                  context={'ticket': ticket,'review': review}
-                  )
-
-
-@login_required(login_url='http://localhost:8000')
 def create_review(request):
+    tickets = Ticket.objects.all().order_by('-time_created')
     user = request.user
-    data = request.POST
-    ticket_id = data.get('ticket_id')
-    headline_review = data.get('headline-review')
-    body_review = data.get('content-review')
-    rating = data.get('rating')
-    try:
-        ticket = Ticket.objects.get(uuid=ticket_id)
-        review = Review.objects.create(user=user,
-                                       ticket=ticket,
-                                       headline=headline_review,
-                                       body=body_review,
-                                       rating=rating)
+    error = None
+
+    if request.method == 'POST':
+        try:
+            ticket_id = request.POST.get('ticket_id')
+            ticket = Ticket.objects.get(uuid=ticket_id)
+            form = ReviewForm(request.POST)
+            if form.is_valid():
+                headline = form.cleaned_data['headline']
+                body = form.cleaned_data['body']
+                rating = form.cleaned_data['rating']
+                username = form.cleaned_data['username']
+                user = CustomUser.objects.get(username=username)
+                ticket = Ticket.objects.get(uuid=ticket_id)
+                # Creating the review
+                Review.objects.create(user=user,
+                                      ticket=ticket,
+                                      headline=headline,
+                                      body=body,
+                                      rating=rating
+                                      )
+                form2 = refactor_review_form(request, user)
+                return render(request, 'tickets/all_tickets.html',
+                  context={'ticket': ticket,
+                           'tickets': tickets,
+                           'form': form2,
+                           }
+                  )
+        
+        except Ticket.DoesNotExist:
+            error = 'The ticket does not exist'
+
+        review_form = refactor_review_form(request, user)
         return render(request, 'tickets/all_tickets.html',
-                      context={'ticket': ticket,
-                              'review': review,
-                              }
-                      )
-    except Ticket.DoesNotExist:
-        return render(request, 'tickets/all_tickets.html',
-                      context={'error': 'Ce billet n\'existe pas'}
-                      )
+                        context={
+                                'error': error,
+                                'form': review_form,
+                                'tickets': tickets
+                                }
+                        )
