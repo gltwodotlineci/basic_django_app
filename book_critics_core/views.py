@@ -1,4 +1,4 @@
-import json
+from django.db.models.query import QuerySet
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import CustomUser, Ticket, Review, UserFollows
 from django.contrib.auth import login, logout
@@ -67,7 +67,7 @@ def inscription(request):
 
 
 # sending followers list
-def send_followers_list(actual_usr: CustomUser)-> list[str]:
+def send_followers_list(actual_usr: CustomUser)-> QuerySet:
     followers_obj = actual_usr.following.all()
     followed_usr_lst = CustomUser.objects.filter(pk__in=followers_obj.values_list(
         'followed_user', flat=True))
@@ -164,7 +164,7 @@ def follow_user(request):
     data = request.POST
     user_id = data.get('user_id')
     name_initial = data.get('name-initial')
-    users = CustomUser.objects.filter(username__startswith=name_initial)
+    users = CustomUser.objects.filter(username__istartswith=name_initial)
 
     # Actual user
     actual_user = request.user
@@ -234,8 +234,6 @@ def logout_user(request):
 @login_required(login_url='http://localhost:8000')
 def ticket(request):
     ticket_form = TicketForm(request.POST or None)
-    user = request.user
-    ticket_form = TicketForm(initial={'username': user.username})
     return render(request, 'tickets/ticket.html',
                   context={'form': ticket_form}
                   )
@@ -249,10 +247,8 @@ def create_ticket(request):
             title = form.cleaned_data['title']
             description = form.cleaned_data['description']
             image = form.cleaned_data['image']
-            username = form.cleaned_data['username']
-            user = CustomUser.objects.get(username=username)
             # Creating the ticket
-            Ticket.objects.create(user=user,
+            Ticket.objects.create(user=request.user,
                                  title=title,
                                  description=description,
                                  image=image
@@ -273,16 +269,15 @@ def create_ticket(request):
     
 
 # Factorizing review form
-def refactor_review_form(request, user: CustomUser):
+def refactor_review_form(request)-> ReviewForm:
     review_form = ReviewForm(request.POST or None)
-    review_form = ReviewForm(initial={'username': user.username})
+    # review_form = ReviewForm(initial={'username': user.username})
     return review_form
 
 
 @login_required(login_url='http://localhost:8000')
 def all_tickets(request):
-    user = request.user
-    review_form = refactor_review_form(request, user)
+    review_form = refactor_review_form(request)
     tickets = Ticket.objects.all().order_by('-time_created')
 
     return render(request, 'tickets/all_tickets.html',
@@ -318,8 +313,6 @@ def create_review(request):
                 headline = form.cleaned_data['headline']
                 body = form.cleaned_data['body']
                 rating = form.cleaned_data['rating']
-                username = form.cleaned_data['username']
-                user = CustomUser.objects.get(username=username)
                 ticket = Ticket.objects.get(uuid=ticket_id)
                 # Creating the review
                 Review.objects.create(user=user,
@@ -328,18 +321,18 @@ def create_review(request):
                                       body=body,
                                       rating=rating
                                       )
-                form2 = refactor_review_form(request, user)
+                form2 = refactor_review_form(request)
                 return render(request, 'tickets/all_tickets.html',
                   context={'ticket': ticket,
                            'tickets': tickets,
-                           'form': form2,
+                           'form': form
                            }
                   )
         
         except Ticket.DoesNotExist:
             error = 'The ticket does not exist'
 
-        review_form = refactor_review_form(request, user)
+        review_form = refactor_review_form(request)
         return render(request, 'tickets/all_tickets.html',
                         context={
                                 'error': error,

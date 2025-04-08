@@ -30,93 +30,71 @@ class LoginForm(forms.Form):
 
 # Creating Signup Form
 class SignupForm(forms.Form):
-    username = forms.CharField(max_length=50, label='Nom d\'utilisateur')
-    email = forms.EmailField(max_length=100, label='Email')
-    password = forms.CharField(widget=forms.PasswordInput, label='Mot de passe')
-    confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirmer le mot de passe')
+    username = forms.CharField(max_length=50, label='User name')
+    email = forms.EmailField(max_length=100, label='email')
+    password = forms.CharField(widget=forms.PasswordInput, label='Passsword')
+    confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirme your password')
 
-    def clean(self):
-        cleaned_data = super().clean()
-        username = cleaned_data.get('username')
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
 
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError("The username is already taken")
 
-        if User.objects.filter(email=cleaned_data.get('email')).exists():
+        return username
+
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
             raise forms.ValidationError("The email is already taken")
+        return email
+
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if len(password) < 5:
+            raise forms.ValidationError("Password must be at least 5 characters long")
+        return password
+
+
+    def clean_confirm_password(self):
+        confirm_password = self.cleaned_data.get('confirm_password')
+        password = self.cleaned_data.get('password')        
 
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match")
 
-        return cleaned_data
+        return confirm_password
+    
 
+# Creating Ticket Form ModelForm
+class TicketForm(forms.ModelForm):
 
-# Creating Ticket Form
-class TicketForm(forms.Form):
-    title = forms.CharField(max_length=128, label='Title')
-    description = forms.CharField(widget=forms.Textarea, max_length='350', label='Description')
-    image = forms.ImageField(label='Image', required=False)
-    username = forms.CharField(max_length=50,
-                               widget=forms.HiddenInput(),
-                                label='User\'s name'
-                                )
+    class Meta:
+        model = Ticket
+        fields = ["title", "description", "image"]
 
-
-    def clean(self):
-        cleaned_data = super().clean()
-        title = cleaned_data.get('title')
-        username = cleaned_data.get('username')
-
-        if not User.objects.filter(username=username).exists():
-            raise forms.ValidationError("The username does not exist")
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
 
         if Ticket.objects.filter(title=title).exists():
             raise forms.ValidationError("The title already exists")
 
-        return cleaned_data
+        return title
+
 
 
 # Creating Review Form
-class ReviewForm(forms.Form):
-    headline = forms.CharField(max_length=128, label='Title')
-    body = forms.CharField(widget=forms.Textarea, max_length=500, label='Body')
-    rating = forms.IntegerField(min_value=0, max_value=5, label='Rating')
-    username = forms.CharField(max_length=50,
-                               widget=forms.HiddenInput(),
-                                label='User\'s name'
-                                )
+class ReviewForm(forms.ModelForm):
+    
+    class Meta:
+        model = Review
+        fields = ['headline', 'body', 'rating']
 
-    def clean(self):
-        cleaned_data = super().clean()
-        headline = cleaned_data.get('headline')
-        username = cleaned_data.get('username')
-
+    def clean_headline(self):
+        headline = self.cleaned_data.get('headline')
         if Review.objects.filter(headline=headline).exists():
-            print("HEADLINE: ", headline)
             raise forms.ValidationError("The headline already exists")
 
-        if not User.objects.filter(username=username).exists():
-            raise forms.ValidationError("The username does not exist")
-
-        return cleaned_data
-
-
-# Creating Follow form
-# class FollowForm(forms.Form):
-#     followed_usr_id = forms.UUIDField(label='Follower\'s ID')
-#     selected_user = forms.CharField(max_length=50)
-
-
-#     def clean(self):
-#         cleaned_data = super().clean()
-#         followed_usr_id = cleaned_data.get('followed_usr_id')
-#         selected_user = cleaned_data.get('selected_user')
-
-#         if not User.objects.filter(username=followed_usr_id).exists():
-#             raise forms.ValidationError("The username does not exist")
-
-#         if not User.objects.filter(username__)
-
-#         return cleaned_data
+        return headline
