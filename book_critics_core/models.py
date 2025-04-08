@@ -6,7 +6,7 @@ from uuid import uuid4
 
 class CustomUser(AbstractUser):
     uuid = models.UUIDField(primary_key=True, unique=True, default=uuid4, editable=False)
-    email = models.EmailField(max_length=100, unique=True, verbose_name='email')
+    email = models.EmailField(max_length=100, unique=True, blank=True, null=True, verbose_name='email')
 
 
 class Ticket(models.Model):# Ajouter champ description
@@ -16,6 +16,7 @@ class Ticket(models.Model):# Ajouter champ description
                              related_name='ticket',
                              verbose_name='utilisateur'
                              )
+    description = models.TextField(max_length=350)
     title = models.CharField(max_length=128)
     image = models.ImageField(blank=True, null=True)
     time_created = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,7 @@
+<h3> Founded users </h3>
+{% for user in users %}
+
+    {% if actual_user != user %}
+        <h4> {{user.username}}</h4>
+    {% endif %}
+{% endfor %}

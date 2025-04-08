@@ -10,7 +10,8 @@ urlpatterns = [
     path('logout/', views.logout_user, name='logout'),
     path('profile/', views.show_profile, name='profile'),
     path('other_profile/<uuid:user_id>/', views.other_profile, name='other_profile'),
-    path('all_users/', views.all_users, name='all_users'),
+    path('users/', views.all_users, name='all_users'),
+    path('search_usr/', views.search_user, name='search_usr'),
     # Following process
     path('follow_user/', views.follow_user, name='follow_user'),
     path('unfollow_user/', views.unfollow_user, name='unfollow_user'),

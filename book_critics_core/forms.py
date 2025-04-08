@@ -31,23 +31,22 @@ class LoginForm(forms.Form):
 # Creating Signup Form
 class SignupForm(forms.Form):
     username = forms.CharField(max_length=50, label='Nom d\'utilisateur')
-    email = forms.EmailField(label='Email')
+    email = forms.EmailField(max_length=100, label='Email')
     password = forms.CharField(widget=forms.PasswordInput, label='Mot de passe')
     confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirmer le mot de passe')
 
     def clean(self):
         cleaned_data = super().clean()
         username = cleaned_data.get('username')
-        email = cleaned_data.get('email')
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
 
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError("The username is already taken")
 
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("This email is already used")
-        
+        if User.objects.filter(email=cleaned_data.get('email')).exists():
+            raise forms.ValidationError("The email is already taken")
+
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match")
 
@@ -94,8 +93,6 @@ class ReviewForm(forms.Form):
         headline = cleaned_data.get('headline')
         username = cleaned_data.get('username')
 
-        print("ALL: ", headline, username)
-
         if Review.objects.filter(headline=headline).exists():
             print("HEADLINE: ", headline)
             raise forms.ValidationError("The headline already exists")
@@ -104,3 +101,22 @@ class ReviewForm(forms.Form):
             raise forms.ValidationError("The username does not exist")
 
         return cleaned_data
+
+
+# Creating Follow form
+# class FollowForm(forms.Form):
+#     followed_usr_id = forms.UUIDField(label='Follower\'s ID')
+#     selected_user = forms.CharField(max_length=50)
+
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         followed_usr_id = cleaned_data.get('followed_usr_id')
+#         selected_user = cleaned_data.get('selected_user')
+
+#         if not User.objects.filter(username=followed_usr_id).exists():
+#             raise forms.ValidationError("The username does not exist")
+
+#         if not User.objects.filter(username__)
+
+#         return cleaned_data

@@ -1,6 +1,7 @@
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import CustomUser, Ticket, Review, UserFollows
-from django.contrib.auth import logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import LoginForm, SignupForm, TicketForm, ReviewForm
 
@@ -10,6 +11,7 @@ def home(request):
         return redirect('profile')
 
     login_form = LoginForm(request.POST or None)
+
     return render(request, 'base/home.html',
                       context={'form': login_form})
     
@@ -20,7 +22,9 @@ def login_user(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
-            return render(request, 'profile/show.html',
+            user = CustomUser.objects.get(username=username)
+            login(request, user)
+            return render(request, 'users/show.html',
                         context={'user': username})
         
     form = LoginForm(request.POST or None)
@@ -49,11 +53,12 @@ def inscription(request):
             password = form.cleaned_data['password']
             email = form.cleaned_data['email']
             user = CustomUser.objects.create_user(username=username,
-                                                   password=password,
-                                                    email=email)
+                                                  email=email,
+                                                   password=password)
 
+            login(request, user)
             context = {'user': user}
-            return render(request, 'profile/show.html', context=context)
+            return render(request, 'users/show.html', context=context)
 
     form = SignupForm(request.POST or None)
     return render(request, 'acces/signup.html',
@@ -72,20 +77,8 @@ def send_followers_list(actual_usr: CustomUser)-> list[str]:
 
 @login_required(login_url='http://localhost:8000')
 def all_users(request):
-    actual_user = request.user
-    users = CustomUser.objects.all()
+    return render(request, 'users/all_users.html')
 
-    try:
-        followed_user_lst = send_followers_list(actual_user)
-    except UserFollows.DoesNotExist:
-        followed_user_lst = []
-
-    return render(request, 'profile/all_users.html',
-                  context={'users': users,
-                           'actual_user': actual_user,
-                           'followed_user': followed_user_lst
-                           },
-                  )
 
 @login_required(login_url='http://localhost:8000')
 def show_profile(request):   
@@ -102,12 +95,37 @@ def show_profile(request):
     for follower in followers:
         followers_lst.append(follower.user)
 
-    return render(request, 'profile/show.html',
+    return render(request, 'users/show.html',
                   context={'user': user,
                            'followed_user': followed_user_lst,
                            "followers": followers_lst
                            }
                   )
+
+
+# Searching user by initials
+@login_required(login_url='http://localhost:8000')
+def search_user(request):
+    actual_user = request.user
+    try:
+        followed_user_lst = send_followers_list(actual_user)
+    except UserFollows.DoesNotExist:
+        followed_user_lst = []
+
+    if request.method == 'POST':
+        name_initial = request.POST.get('init-username')
+        users = CustomUser.objects.filter(username__startswith=name_initial)
+        actual_user = request.user
+
+        return render(request, 'users/all_users.html',
+                    context={'users': users,
+                             'followed_user': followed_user_lst,
+                             'actual_user': actual_user,
+                            'name_initial': name_initial
+                            }
+                        )
+
+    return redirect('all_users')
 
 
 # Show all spcecific user
@@ -132,7 +150,7 @@ def other_profile(request, user_id):
     for follower in followers:
         followers_lst.append(follower.user.username)
 
-    return render(request, 'profile/show.html',
+    return render(request, 'users/show.html',
                   context={'user': other_user,
                            'followed_user': followed_user_lst,
                            "followers": followers_lst,
@@ -145,9 +163,11 @@ def follow_user(request):
     # Check if user you want to follow exists
     data = request.POST
     user_id = data.get('user_id')
+    name_initial = data.get('name-initial')
+    users = CustomUser.objects.filter(username__startswith=name_initial)
+
     # Actual user
     actual_user = request.user
-    users = CustomUser.objects.all()
     try:
         user_follow = CustomUser.objects.get(uuid=user_id)
         UserFollows.objects.create(user=actual_user,
@@ -155,17 +175,18 @@ def follow_user(request):
         
         followed_user_lst = send_followers_list(actual_user)
         
-        return render(request, 'profile/all_users.html',
+        return render(request, 'users/all_users.html',
                     context={'users': users,
                              'actual_user': actual_user,
-                             'followed_user': followed_user_lst
+                             'followed_user': followed_user_lst,
+                            'name_initial': name_initial
                             }
                         )
     
     except CustomUser.DoesNotExist:
         followed_user_lst = []
         users = CustomUser.objects.all()
-        return render(request, 'profile/all_users.html',
+        return render(request, 'users/all_users.html',
                     context={'error': 'Error: this user does not exist',
                             'users': users,
                             'followed_user': followed_user_lst
@@ -179,22 +200,28 @@ def unfollow_user(request):
     actual_user = request.user
     data = request.POST
     followed = data.get('user_id')
+    name_initial = data.get('name-initial')
 
     followed_user = UserFollows.objects.filter(
         user=actual_user,
         followed_user=followed
     )
     followed_user.delete()
-    users = CustomUser.objects.all()
+    users = CustomUser.objects.filter(username__startswith=name_initial)
+
+    print('name_initial: ', name_initial)
     try:
         followed_user_lst = send_followers_list(actual_user)
     except UserFollows.DoesNotExist:
         followed_user_lst = []
-        followed_user = None
-    return render(request, 'profile/all_users.html',
+
+    print("Followed user list: ", followed_user_lst)
+
+    return render(request, 'users/all_users.html',
                     context={'users': users,
                              'actual_user': actual_user,
-                             'followed_user': followed_user_lst
+                             'followed_user': followed_user_lst,
+                            'name_initial': name_initial
                             }
                 )
 
@@ -220,12 +247,16 @@ def create_ticket(request):
         form = TicketForm(request.POST)
         if form.is_valid():
             title = form.cleaned_data['title']
-            # description = form.cleaned_data['description']
-            # image = form.cleaned_data['image']
+            description = form.cleaned_data['description']
+            image = form.cleaned_data['image']
             username = form.cleaned_data['username']
             user = CustomUser.objects.get(username=username)
             # Creating the ticket
-            Ticket.objects.create(user=user, title=title)
+            Ticket.objects.create(user=user,
+                                 title=title,
+                                 description=description,
+                                 image=image
+                                 )
             tickets = Ticket.objects.all().order_by('-time_created')
             return render(request, 'tickets/all_tickets.html',
                   context={'tickets': tickets}

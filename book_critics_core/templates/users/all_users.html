@@ -15,12 +15,15 @@
                 <form action="{% url 'unfollow_user' %}", method="post">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" value="{{user.pk}}">
+                    <input type="hidden" name="name-initial" value="{{name_initial}}">
                     <button type="submit" class="btn btn-primary">Unfollow</button>
                 </form>
             {% else %}
             <form action="{% url 'follow_user' %}", method="post">
                 {% csrf_token %}
                 <input type="hidden" name="user_id" value="{{user.pk}}">
+                <input type="hidden" name="name-initial" value="{{name_initial}}">
+
                 <button type="submit" class="btn btn-primary">follow</button>
             </form>
             {% endif %}
@@ -29,5 +32,14 @@
 
     {% endif %}
 {% endfor %}
+
+<form action="{% url 'search_usr' %}" method='post'>
+    {% csrf_token %}
+    <input type="text" name="init-username" id="search" placeholder="Search for users..">
+
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+
 
 {% endblock %}
