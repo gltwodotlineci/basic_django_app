@@ -1,0 +1,18 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>You can create a Ticket and Review at the same time</h2>
+<form action="{% url 'create-tck-rvw' %}" method="post">
+    {% csrf_token %}
+    <h3>Ticket</h3>
+    {{ ticket_form}}
+
+    <h3>Review</h3>
+    {{ review_form }}
+    <button type="submit" class="btn btn-primary"
+            data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Create Ticket and Review
+    </button>
+</form>
+{% endblock %}

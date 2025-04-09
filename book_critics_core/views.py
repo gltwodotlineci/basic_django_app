@@ -289,9 +289,14 @@ def all_tickets(request):
 
 
 @login_required(login_url='http://localhost:8000')
-def my_tickets(request):
+def my_tickets(request, user_id):
     user = request.user
-    tickets = Ticket.objects.filter(user=user).order_by('-time_created')
+    if user_id != user.uuid:
+        followed = CustomUser.objects.get(uuid=user_id)
+    else:
+        followed = user
+
+    tickets = Ticket.objects.filter(user=followed).order_by('-time_created')
 
     return render(request, 'tickets/all_tickets.html',
                   context={'tickets': tickets}
@@ -340,3 +345,68 @@ def create_review(request):
                                 'tickets': tickets
                                 }
                         )
+
+# Page for ticket and review
+def ticket_and_review(request):
+    ticket_form = TicketForm(request.POST or None)
+    review_form = ReviewForm(request.POST or None)
+    
+    return render(request, 'tickets/ticket_and_review.html',
+                  context={
+                        'ticket_form': ticket_form,
+                        'review_form': review_form
+                        }
+                  )
+
+
+# Creating ticket and review at the same time
+@login_required(login_url='http://localhost:8000')
+def create_tck_rvw(request):
+    if request.method == 'POST':
+        ticket_form = TicketForm(request.POST)
+        review_form = ReviewForm(request.POST)
+
+        if ticket_form is None or review_form is None:
+            error = 'The ticket or review form is empty'
+            return render(request, 'tickets/ticket_and_review.html',
+                          context={
+                            'ticket_form': TicketForm(request.POST or None),
+                            'review_form': ReviewForm(request.POST or None),
+                            'error': error
+                            }
+                          )
+        if ticket_form.is_valid() and review_form.is_valid():
+            title = ticket_form.cleaned_data['title']
+            description = ticket_form.cleaned_data['description']
+            image = ticket_form.cleaned_data['image']
+            headline = review_form.cleaned_data['headline']
+            body = review_form.cleaned_data['body']
+            rating = review_form.cleaned_data['rating']
+
+            # Creating the ticket
+            ticket = Ticket.objects.create(user=request.user,
+                                           title=title,
+                                           description=description,
+                                           image=image
+                                           )
+            # Creating the review
+            Review.objects.create(user=request.user,
+                                  ticket=ticket,
+                                  headline=headline,
+                                  body=body,
+                                  rating=rating
+                                  )
+            tickets = Ticket.objects.all().order_by('-time_created')
+            return render(request, 'tickets/all_tickets.html',
+                          context={'tickets': tickets}
+                          )
+
+    ticket_form = TicketForm(request.POST or None)
+    user = request.user
+    ticket_form = TicketForm(initial={'username': user.username})
+
+    return render(request, 'tickets/ticket.html',
+                  context={
+                    'form': ticket_form,
+                    }
+                  )
