@@ -18,7 +18,6 @@ urlpatterns = [
     # Tickets
     path('ticket/', views.ticket, name='ticket'),
     path('create_ticket/', views.create_ticket, name='create_ticket'),
-    path('tickets/', views.all_tickets, name='tickets'),
     path('my_tickets/<uuid:user_id>/', views.my_tickets, name='my_tickets'),
     # Reviews
     path('create_review/', views.create_review, name='create_review'),

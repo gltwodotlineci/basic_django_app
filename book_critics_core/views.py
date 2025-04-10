@@ -248,12 +248,13 @@ def create_ticket(request):
             description = form.cleaned_data['description']
             image = form.cleaned_data['image']
             # Creating the ticket
-            Ticket.objects.create(user=request.user,
+            new_ticket = Ticket.objects.create(user=request.user,
                                  title=title,
                                  description=description,
                                  image=image
                                  )
-            tickets = Ticket.objects.all().order_by('-time_created')
+            tickets = Ticket.objects.filter(user=new_ticket.user)
+            tickets.order_by('-time_created')
             return render(request, 'tickets/all_tickets.html',
                   context={'tickets': tickets}
                   )
@@ -276,21 +277,9 @@ def refactor_review_form(request)-> ReviewForm:
 
 
 @login_required(login_url='http://localhost:8000')
-def all_tickets(request):
-    review_form = refactor_review_form(request)
-    tickets = Ticket.objects.all().order_by('-time_created')
-
-    return render(request, 'tickets/all_tickets.html',
-                  context={
-                        'tickets': tickets,
-                        'form': review_form,
-                        }
-                  )
-
-
-@login_required(login_url='http://localhost:8000')
 def my_tickets(request, user_id):
     user = request.user
+    review_form = ReviewForm(request.POST)
     if user_id != user.uuid:
         followed = CustomUser.objects.get(uuid=user_id)
     else:
@@ -299,13 +288,15 @@ def my_tickets(request, user_id):
     tickets = Ticket.objects.filter(user=followed).order_by('-time_created')
 
     return render(request, 'tickets/all_tickets.html',
-                  context={'tickets': tickets}
+                  context={'tickets': tickets,
+                           'user': followed,
+                           'form': review_form,
+                           }
                   )
 
 
 @login_required(login_url='http://localhost:8000')
 def create_review(request):
-    tickets = Ticket.objects.all().order_by('-time_created')
     user = request.user
     error = None
 
@@ -313,6 +304,8 @@ def create_review(request):
         try:
             ticket_id = request.POST.get('ticket_id')
             ticket = Ticket.objects.get(uuid=ticket_id)
+            # Geting the ticket from the right user
+            tickets = Ticket.objects.filter(user=ticket.user).order_by('-time_created')
             form = ReviewForm(request.POST)
             if form.is_valid():
                 headline = form.cleaned_data['headline']
@@ -330,7 +323,7 @@ def create_review(request):
                 return render(request, 'tickets/all_tickets.html',
                   context={'ticket': ticket,
                            'tickets': tickets,
-                           'form': form
+                           'form': form2
                            }
                   )
         
@@ -396,7 +389,8 @@ def create_tck_rvw(request):
                                   body=body,
                                   rating=rating
                                   )
-            tickets = Ticket.objects.all().order_by('-time_created')
+            tickets = Ticket.objects.filter(user=ticket.user)
+            tickets.order_by('-time_created')
             return render(request, 'tickets/all_tickets.html',
                           context={'tickets': tickets}
                           )

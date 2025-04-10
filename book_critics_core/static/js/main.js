@@ -23,4 +23,18 @@ function searchUser() {
       }
     });
   }
-            
+
+
+function openDialogBox(id){
+  var dialog = document.getElementById(id);
+  if (dialog) {
+    dialog.showModal();
+  }
+}
+
+function closeDialogBox(id){
+  var dialog = document.getElementById(id);
+  if (dialog) {
+    dialog.close();
+  }
+}

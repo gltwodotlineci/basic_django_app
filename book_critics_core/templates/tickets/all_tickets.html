@@ -5,32 +5,41 @@
 <a href="{% url 'profile' %}">
     <i class="fa fa-solid fa-user"></i>
 </a>
-    <h1> All Tickets</h1>
+    <h1> All Tickets of {{user.username}} </h1>
     {% for ticket in tickets %}
-        <p>Created by: {{ticket.user.username}} - {{ticket.title}} </p>
+        <h3>Ticket title: {{ticket.title}} </h3>
         {% for review in ticket.review.all %}
             {% if review %}
-                <p>Headline:{{review.headline}} - Content {{review.body}} -
-                     Rated at {{review.rating}} points
-                </p>
+                <p>Headline: {{review.headline}}</p>
+                <p>Content {{review.body}}</p>
+                <p>Rated at {{review.rating}} points</p>
             {% else %}
                 <p>No review yet</p>
             {% endif %}
         {% endfor %}
+            
+    <dialog id="myDialog{{ticket.pk}}">
+
         <form action="{% url 'create_review' %}" method="post" id="{{ticket.title}}">
             {% csrf_token %}
-            <label>Headline review</label>
             {{form}}
-
             <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
-
             <button type="submit" class="btn btn-primary"
                         data-bs-toggle="modal" data-bs-target="#exampleModal"
                     >
-                Ajouter
+                Add Review
             </button>
+            <button onclick="closeDialogBox('myDialog{{ticket.pk}}')">Close</button>
 
         </form>
+    </dialog>
+    <button onclick="openDialogBox('myDialog{{ticket.pk}}')"
+    id="openBtn" class="btn btn-primary">
+        Create Review
+    </button>
+
     {% endfor %}
     <a href="{% url 'logout' %}">Déconnexion</a>
+
+
 {% endblock %}
