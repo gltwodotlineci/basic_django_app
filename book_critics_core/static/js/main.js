@@ -38,3 +38,38 @@ function closeDialogBox(id){
     dialog.close();
   }
 }
+
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+
+function send_ticket_id(ticketId, dialog_id){
+
+  fetch('http://localhost:8000/send_tc/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken'),
+    },
+    credentials: 'include',
+    body: JSON.stringify({ ticket_id: ticketId })
+  })
+  .then(res => res.json())
+  .then(data => console.log('Success:', data))
+  .catch(err => console.error('Error:', err));
+  openDialogBox(dialog_id)
+
+}

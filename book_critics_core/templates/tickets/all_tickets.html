@@ -8,6 +8,58 @@
     <h1> All Tickets of {{user.username}} </h1>
     {% for ticket in tickets %}
         <h3>Ticket title: {{ticket.title}} </h3>
+        <dialog id="delete{{ticket.pk}}">
+            <h4>Are you sure to delete the Ticket {{ticket.title}}</h4>
+            <form action="{% url 'delete_ticket' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
+            <button class="btn btn-danger"
+                    onclick="document.getElementById('delete{{ticket.pk}}').close();">
+                Yes
+            </button>
+            </form>
+            <button class="btn btn-primary"
+                    onclick="document.getElementById('delete{{ticket.pk}}').close();">
+                Close
+            </button>
+        </dialog>
+        <dialog id="update{{ticket.pk}}">
+            <h4>Updating your ticket {{ticket.title}} </h4>
+            <form action="{% url 'update_tc' %}" method="post">
+                {% csrf_token %}
+                <label>Title</label></br>
+                <input type="text" value="{{ticket.title}}" name="ticket_title">
+                </br>
+                <label>Description</label>
+                </br>
+                <textarea  name="description">
+                    {{ticket.description}}
+                </textarea>
+                </br>
+                <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
+                <button type="submit" class="btn btn-primary">
+                    Update
+                </button>
+            </form>
+
+
+            <button class="btn btn-primary"
+                    onclick="document.getElementById('update{{ticket.pk}}').close();">
+                Close
+            </button>
+        </dialog>
+            <button  class="btn btn-primary"
+                onclick="openDialogBox('update{{ticket.pk}}')"
+            >
+                Update
+            </button>
+
+
+        <button class="btn btn-danger"
+                data-bs-toggle="modal" data-bs-target="#exampleModal"
+                onclick="openDialogBox('delete{{ticket.pk}}')">
+            Delete
+        </button>
         {% for review in ticket.review.all %}
             {% if review %}
                 <p>Headline: {{review.headline}}</p>
@@ -16,6 +68,7 @@
             {% else %}
                 <p>No review yet</p>
             {% endif %}
+
         {% endfor %}
             
     <dialog id="myDialog{{ticket.pk}}">

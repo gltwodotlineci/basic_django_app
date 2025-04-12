@@ -66,6 +66,12 @@ def inscription(request):
                 )
 
 
+# Logout user
+def logout_user(request):
+    logout(request)
+    return redirect("home")
+
+
 # sending followers list
 def send_followers_list(actual_usr: CustomUser)-> QuerySet:
     followers_obj = actual_usr.following.all()
@@ -78,6 +84,7 @@ def send_followers_list(actual_usr: CustomUser)-> QuerySet:
 @login_required(login_url='http://localhost:8000')
 def all_users(request):
     return render(request, 'users/all_users.html')
+
 
 
 @login_required(login_url='http://localhost:8000')
@@ -226,11 +233,9 @@ def unfollow_user(request):
                 )
 
 
-def logout_user(request):
-    logout(request)
-    return redirect("home")
-
-
+'''
+Ticket part
+'''
 @login_required(login_url='http://localhost:8000')
 def ticket(request):
     ticket_form = TicketForm(request.POST or None)
@@ -294,50 +299,6 @@ def my_tickets(request, user_id):
                            }
                   )
 
-
-@login_required(login_url='http://localhost:8000')
-def create_review(request):
-    user = request.user
-    error = None
-
-    if request.method == 'POST':
-        try:
-            ticket_id = request.POST.get('ticket_id')
-            ticket = Ticket.objects.get(uuid=ticket_id)
-            # Geting the ticket from the right user
-            tickets = Ticket.objects.filter(user=ticket.user).order_by('-time_created')
-            form = ReviewForm(request.POST)
-            if form.is_valid():
-                headline = form.cleaned_data['headline']
-                body = form.cleaned_data['body']
-                rating = form.cleaned_data['rating']
-                ticket = Ticket.objects.get(uuid=ticket_id)
-                # Creating the review
-                Review.objects.create(user=user,
-                                      ticket=ticket,
-                                      headline=headline,
-                                      body=body,
-                                      rating=rating
-                                      )
-                form2 = refactor_review_form(request)
-                return render(request, 'tickets/all_tickets.html',
-                  context={'ticket': ticket,
-                           'tickets': tickets,
-                           'form': form2
-                           }
-                  )
-        
-        except Ticket.DoesNotExist:
-            error = 'The ticket does not exist'
-
-        review_form = refactor_review_form(request)
-        return render(request, 'tickets/all_tickets.html',
-                        context={
-                                'error': error,
-                                'form': review_form,
-                                'tickets': tickets
-                                }
-                        )
 
 # Page for ticket and review
 def ticket_and_review(request):
@@ -404,3 +365,99 @@ def create_tck_rvw(request):
                     'form': ticket_form,
                     }
                   )
+
+ 
+
+# update ticket
+def update_tck(request):#, ticket_id):
+    user = request.user
+    if request.method == "POST":
+        data = request.POST
+        ticket_id = data.get('ticket_id')
+        try:
+            ticket = Ticket.objects.get(uuid=ticket_id)
+            ticket.title = data.get('ticket_title')
+            ticket.description = data.get('description')
+            ticket.save()
+            tickets = Ticket.objects.filter(user=ticket.user)
+            form = ReviewForm(request.POST or None)
+            return render(request, 'tickets/all_tickets.html',
+                          context={
+                                'tickets': tickets,
+                                'form': form,
+                                'user': user
+                                })
+        except Ticket.DoesNotExist:
+            error = "The ticked you updated does not exists"
+            return render(request, 'users/show.html',
+                        context={'user': user.username,
+                                 'error': error
+                                 })
+
+
+# delete ticket
+def delete_ticket(request):
+    data = request.POST
+    ticket_id = data.get('ticket_id')
+    ticket = Ticket.objects.get(uuid=ticket_id)
+    tickets = Ticket.objects.filter(user=request.user)
+    tickets.order_by('-time_created')
+    form = ReviewForm(request.POST or None)
+
+    if ticket.user == request.user:
+        ticket.delete()
+        return render(request, 'tickets/all_tickets.html',
+                      context={
+                        'tickets': tickets,
+                        'form': form,
+                        'user': request.user
+                          }
+                      )
+    
+
+'''
+Review part
+'''
+@login_required(login_url='http://localhost:8000')
+def create_review(request):
+    user = request.user
+    error = None
+
+    if request.method == 'POST':
+        try:
+            ticket_id = request.POST.get('ticket_id')
+            ticket = Ticket.objects.get(uuid=ticket_id)
+            # Geting the ticket from the right user
+            tickets = Ticket.objects.filter(user=ticket.user).order_by('-time_created')
+            form = ReviewForm(request.POST)
+            if form.is_valid():
+                headline = form.cleaned_data['headline']
+                body = form.cleaned_data['body']
+                rating = form.cleaned_data['rating']
+                ticket = Ticket.objects.get(uuid=ticket_id)
+                # Creating the review
+                Review.objects.create(user=user,
+                                      ticket=ticket,
+                                      headline=headline,
+                                      body=body,
+                                      rating=rating
+                                      )
+                form2 = refactor_review_form(request)
+                return render(request, 'tickets/all_tickets.html',
+                  context={'ticket': ticket,
+                           'tickets': tickets,
+                           'form': form2
+                           }
+                  )
+        
+        except Ticket.DoesNotExist:
+            error = 'The ticket does not exist'
+
+        review_form = refactor_review_form(request)
+        return render(request, 'tickets/all_tickets.html',
+                        context={
+                                'error': error,
+                                'form': review_form,
+                                'tickets': tickets
+                                }
+                        )
