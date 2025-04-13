@@ -83,29 +83,33 @@ def send_followers_list(actual_usr: CustomUser)-> QuerySet:
 
 @login_required(login_url='http://localhost:8000')
 def all_users(request):
-    return render(request, 'users/all_users.html')
+    user = request.user
+    followed_users = user.following.all()
+    followers = user.followed_user.all()
+    for follower in followers:
+        print(follower.user)
 
+    return render(request, 'users/all_users.html',
+                  {
+                      'follow_users': followed_users,
+                      'followers': followers
+                  }
+                  )
 
 
 @login_required(login_url='http://localhost:8000')
 def show_profile(request):   
     user = request.user
-    followed_users = UserFollows.objects.filter(user=user)
-    followers = UserFollows.objects.filter(followed_user=user)
-    followed_user_lst = []
-    followers_lst = []
-    # Get the list of followed users
-    for followed_user in followed_users:
-        followed_user_lst.append(followed_user.followed_user)
 
-    # Get the list of followers
-    for follower in followers:
-        followers_lst.append(follower.user)
+    # Followed and follower
+    followed_user = user.following.all()
+    followers = user.followed_user.all()
+
 
     return render(request, 'users/show.html',
                   context={'user': user,
-                           'followed_user': followed_user_lst,
-                           "followers": followers_lst
+                           'followed_user': followed_user,
+                           "followers": followers
                            }
                   )
 
@@ -114,10 +118,8 @@ def show_profile(request):
 @login_required(login_url='http://localhost:8000')
 def search_user(request):
     actual_user = request.user
-    try:
-        followed_user_lst = send_followers_list(actual_user)
-    except UserFollows.DoesNotExist:
-        followed_user_lst = []
+    followed_users = actual_user.following.all()
+    followers = actual_user.followed_user.all()
 
     if request.method == 'POST':
         name_initial = request.POST.get('init-username')
@@ -126,8 +128,9 @@ def search_user(request):
 
         return render(request, 'users/all_users.html',
                     context={'users': users,
-                             'followed_user': followed_user_lst,
+                             'follow_users': followed_users,
                              'actual_user': actual_user,
+                             'followers': followers,
                             'name_initial': name_initial
                             }
                         )
@@ -222,7 +225,6 @@ def unfollow_user(request):
     except UserFollows.DoesNotExist:
         followed_user_lst = []
 
-    print("Followed user list: ", followed_user_lst)
 
     return render(request, 'users/all_users.html',
                     context={'users': users,
@@ -236,6 +238,29 @@ def unfollow_user(request):
 '''
 Ticket part
 '''
+# Flux
+@login_required(login_url='http://localhost:8000')
+def flux(request):
+    user = request.user
+    my_tickets = Ticket.objects.filter(user=user)
+    # Getting the ticket of users follower
+    followed = UserFollows.objects.filter(user=user)
+    followed_usr_lst = CustomUser.objects.filter(pk__in=followed.values_list(
+        'followed_user', flat=True))
+    other_tickets = Ticket.objects.filter(user__in=followed_usr_lst)
+    ticket_form = TicketForm(request.POST or None)
+    review_form = ReviewForm(request.POST or None)
+
+
+    return render(request, 'tickets/flux.html',
+                  {
+                      'my_tickets': my_tickets,
+                      'other_tickets': other_tickets,
+                      'ticket_form': ticket_form,
+                      'review_form': review_form
+                  }
+                  )
+
 @login_required(login_url='http://localhost:8000')
 def ticket(request):
     ticket_form = TicketForm(request.POST or None)
@@ -366,7 +391,6 @@ def create_tck_rvw(request):
                     }
                   )
 
- 
 
 # update ticket
 def update_tck(request):#, ticket_id):

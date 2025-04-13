@@ -2,9 +2,8 @@
 {% load static %}
 
 {% block content %}
-<a href="{% url 'profile' %}">
-    <i class="fa fa-solid fa-user"></i>
-</a>
+{% include 'base/navbar.html' %}
+
     <h1> All Tickets of {{user.username}} </h1>
     {% for ticket in tickets %}
         <h3>Ticket title: {{ticket.title}} </h3>
@@ -92,7 +91,5 @@
     </button>
 
     {% endfor %}
-    <a href="{% url 'logout' %}">Déconnexion</a>
-
 
 {% endblock %}

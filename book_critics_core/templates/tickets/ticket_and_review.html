@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block content %}
+{% include 'base/navbar.html' %}
+
 <h2>You can create a Ticket and Review at the same time</h2>
 <form action="{% url 'create-tck-rvw' %}" method="post">
     {% csrf_token %}

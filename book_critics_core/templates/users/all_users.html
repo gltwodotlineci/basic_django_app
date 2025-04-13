@@ -2,36 +2,31 @@
 {% load static %}
 
 {% block content %}
-<a href="{% url 'profile' %}">
-    <i class="fa fa-solid fa-user"></i>
-</a>
-<h1> The list of all users is: </h1>
-{% for user in users %}
-    {% if actual_user != user %}
-        <h4> {{user.username}}</h4>
+{% include 'base/navbar.html' %}
 
-        <h5>
-            {% if user in followed_user %}
-                <form action="{% url 'unfollow_user' %}", method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="user_id" value="{{user.pk}}">
-                    <input type="hidden" name="name-initial" value="{{name_initial}}">
-                    <button type="submit" class="btn btn-primary">Unfollow</button>
-                </form>
-            {% else %}
-            <form action="{% url 'follow_user' %}", method="post">
-                {% csrf_token %}
-                <input type="hidden" name="user_id" value="{{user.pk}}">
-                <input type="hidden" name="name-initial" value="{{name_initial}}">
+<h1> The list of your followers and who you are following is:</h1>
+<div class="row">
+    <div class="col-6">
+        <h3> My followers</h3>
+        {% for follower in followers %}
+            <h5>{{follower.user.username}}</h5>
+            <a href="http://localhost:8000/my_tickets/{{follower.pk}}">
+                <button type="submit" class="btn btn-primary">See profile</button>
+            </a>
 
-                <button type="submit" class="btn btn-primary">follow</button>
-            </form>
-            {% endif %}
+        {% endfor %}
 
-        </h5>
-
-    {% endif %}
-{% endfor %}
+    </div>
+    <div class="col-6">
+        <h3> Following</h3>
+        {% for followed in follow_users %}
+            <h5>{{followed.user.username}}</h5>
+            <a href="http://localhost:8000/my_tickets/{{followed.pk}}">
+                <button type="submit" class="btn btn-primary">See profile</button>
+            </a>
+        {% endfor %}
+    </div>
+</div>
 
 <form action="{% url 'search_usr' %}" method='post'>
     {% csrf_token %}
@@ -39,6 +34,11 @@
 
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
+
+<h5>The persons we found are</h5>
+{% for user in users %}
+<h5>{{user.username}}</h5>
+{% endfor %}
 
 
 

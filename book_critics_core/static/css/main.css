@@ -1,10 +1,26 @@
-html, body {
+body {
     height: 100%;
-    margin: 0;
-    display: flex;
+    width: 90%;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
 }
 
+main{
+    border-style: solid;
+    border-width: thin;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+    border-style: solid;
+    border-width: thin;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: black;
+    font-weight: 500;
+  }

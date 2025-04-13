@@ -1,0 +1,49 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'base/navbar.html' %}
+</br>
+<div class="row">
+    <div class="col-6">
+        <div class="col-6">
+            <a href="">
+                <button type="submit" class="btn btn-primary">
+                    Ask a review
+                </button>
+            </a>
+    </div>
+
+    </div>
+    <div class="col-6">
+        <dialog id="ticket-review">
+            {% include 'tickets/ticket_and_review.html' %}    
+            <button class="btn btn-primary"
+                    onclick="document.getElementById('ticket-review').close();">
+                Close
+            </button>
+        
+        </dialog>
+        <button type="submit" class="btn btn-primary"
+            onclick="onclick=openDialogBox('ticket-review')"
+        >
+            Create Ticket
+        </button>
+    </div>
+</div>
+
+
+{% for ticket in my_tickets %}
+    <h6>Ticket created by: {{ticket.user.username}}</h6>
+    <h5>Title: {{ticket.title}}</h5>
+    <h7>{{ticket.description}}</h7>
+{% endfor %}
+
+{% for ticket in other_tickets %}
+    <h6>Ticket created by: {{ticket.user.username}}</h6>
+    <h5>Title: {{ticket.title}}</h5>
+    <h7>{{ticket.description}}</h7>
+{% endfor %}
+
+{% endblock %}
