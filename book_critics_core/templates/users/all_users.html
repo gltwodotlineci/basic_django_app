@@ -10,7 +10,7 @@
         <h3> My followers</h3>
         {% for follower in followers %}
             <h5>{{follower.user.username}}</h5>
-            <a href="http://localhost:8000/my_tickets/{{follower.pk}}">
+            <a href="http://localhost:8000/my_tickets/{{follower.user.pk}}">
                 <button type="submit" class="btn btn-primary">See profile</button>
             </a>
 
@@ -21,7 +21,7 @@
         <h3> Following</h3>
         {% for followed in follow_users %}
             <h5>{{followed.user.username}}</h5>
-            <a href="http://localhost:8000/my_tickets/{{followed.pk}}">
+            <a href="http://localhost:8000/my_tickets/{{followed.user.pk}}">
                 <button type="submit" class="btn btn-primary">See profile</button>
             </a>
         {% endfor %}

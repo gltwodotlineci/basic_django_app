@@ -61,10 +61,10 @@
         </button>
         {% for review in ticket.review.all %}
             {% if review %}
-                <p>Headline: {{review.headline}}</p>
-                <p>Content {{review.body}}</p>
-                <p>Rated at {{review.rating}} points</p>
-            {% else %}
+                <h6> Your review at {{review.time_created}}</review></h6>
+                <p>{{review.headline}} {{ "⭐⭐⭐⭐⭐"|slice:review.rating }}</p>
+                <p>{{review.body}}</review></p>
+                {% else %}
                 <p>No review yet</p>
             {% endif %}
 

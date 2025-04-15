@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block content %}
-<h1> Welcome to Ticket creatin</h1>
-<h3>{{username}}</h3>
+{% include 'base/navbar.html' %}
+<h3> Welcome! you can create a ticket</h3>
 
 <form action="{% url 'create_ticket' %}" method="post">
     {% csrf_token %}
@@ -15,4 +15,5 @@
     {{ form.description.errors }}
 
     <button type="submit" class="btn btn-primary">Create Ticket</button>
-{% endblock %}
+</form></br>
+    {% endblock %}

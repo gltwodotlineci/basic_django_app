@@ -58,7 +58,7 @@ class SignupForm(forms.Form):
         return password
 
 
-    def clean_confirm_password(self):
+    def clean_password(self):
         confirm_password = self.cleaned_data.get('confirm_password')
         password = self.cleaned_data.get('password')        
 
@@ -86,11 +86,17 @@ class TicketForm(forms.ModelForm):
 
 
 # Creating Review Form
+RATING_CHOICES = [(i, str(i)) for i in range(1,6)] 
+
 class ReviewForm(forms.ModelForm):
     
     class Meta:
         model = Review
         fields = ['headline', 'body', 'rating']
+        widgets = {
+            'rating': forms.RadioSelect(choices=RATING_CHOICES)
+        }
+
 
     def clean_headline(self):
         headline = self.cleaned_data.get('headline')

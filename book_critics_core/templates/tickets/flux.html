@@ -8,33 +8,33 @@
 <div class="row">
     <div class="col-6">
         <div class="col-6">
-            <a href="">
+            <a href="{% url 'ticket' %}">
                 <button type="submit" class="btn btn-primary">
-                    Ask a review
+                    Create Ticket
                 </button>
             </a>
     </div>
 
     </div>
     <div class="col-6">
-        <dialog id="ticket-review">
-            {% include 'tickets/ticket_and_review.html' %}    
-            <button class="btn btn-primary"
-                    onclick="document.getElementById('ticket-review').close();">
-                Close
+        <a href="{% url 'ticketreview' %}">
+            <button type="submit" class="btn btn-primary">
+                Create Ticket and Review
             </button>
-        
-        </dialog>
-        <button type="submit" class="btn btn-primary"
-            onclick="onclick=openDialogBox('ticket-review')"
-        >
-            Create Ticket
-        </button>
+        </a>
     </div>
 </div>
 
 
 {% for ticket in my_tickets %}
+    {% for review in ticket.review.all %}
+        {% if review %}
+            <h7> Your review at {{review.time_created}}</h7>
+            <h6>{{review.headline}} {{ "⭐⭐⭐⭐⭐"|slice:review.rating }}</h6>
+            <h6>{{review.body}}</h6>
+        {% endif %}
+    {% endfor %}
+
     <h6>Ticket created by: {{ticket.user.username}}</h6>
     <h5>Title: {{ticket.title}}</h5>
     <h7>{{ticket.description}}</h7>

@@ -243,11 +243,13 @@ Ticket part
 def flux(request):
     user = request.user
     my_tickets = Ticket.objects.filter(user=user)
+    my_tickets.order_by('-time_created')
     # Getting the ticket of users follower
     followed = UserFollows.objects.filter(user=user)
     followed_usr_lst = CustomUser.objects.filter(pk__in=followed.values_list(
         'followed_user', flat=True))
     other_tickets = Ticket.objects.filter(user__in=followed_usr_lst)
+    other_tickets.order_by('-time_created')
     ticket_form = TicketForm(request.POST or None)
     review_form = ReviewForm(request.POST or None)
 
