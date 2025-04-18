@@ -29,7 +29,7 @@ class Review(models.Model):
                              related_name='review',
                              verbose_name='utilisateur'
                              )
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='review', verbose_name='billet')
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='review', verbose_name='billet')#unique=True
     rating = models.PositiveSmallIntegerField(max_length=1024, validators=[
         MinValueValidator(0), MaxValueValidator(5)
     ])

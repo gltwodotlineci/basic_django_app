@@ -6,27 +6,6 @@
 
     <h1> Welcome mr {{user.username}}!</h1>
 
-
-        <div class="row">
-            <div class="col-6">
-                <a href="{% url 'ticket' %}">
-                    <button type="submit" class="btn btn-primary"
-                        data-bs-toggle="modal" data-bs-target="#exampleModal"
-                    >
-                        Create ticket
-                    </button>
-                </a>
-                <a href="{% url 'ticketreview' %}">
-                    <button type="submit" class="btn btn-primary"
-                        data-bs-toggle="modal" data-bs-target="#exampleModal"
-                    >
-                        Create ticket with Review
-                    </button>
-                </a>
-            </div>
-            <div class="col-6">
-
-            </div>
         </div></br>
         <div class="row">
             <div class="col-6">
@@ -64,7 +43,7 @@
             <div class="col-6">
                 <h3> Following</h3>
                 {% for followed in followed_user %}
-                    <h5>{{followed.user.username}}</h5>
+                    <h5>{{followed.followed_user.username}}</h5>
                     <a href="http://localhost:8000/my_tickets/{{followed.user.pk}}">
                         <button type="submit" class="btn btn-primary">See profile</button>
                     </a>

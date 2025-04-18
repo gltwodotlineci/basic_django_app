@@ -1,15 +1,24 @@
 body {
+    display: flex;
     height: 100%;
     width: 90%;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
+    margin: 0;
 }
 
 main{
-    border-style: solid;
-    border-width: thin;
+  border: 1px solid #ccc;
+  width: 80%;
+  min-width: 1100px;
+  max-width: 1700px;
+  margin-top: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  background-color: #fff;
 }
 
 .nav-links {

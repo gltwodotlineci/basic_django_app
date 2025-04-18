@@ -25,25 +25,15 @@
     </div>
 </div>
 
+{% for tr in tickets_reviews %}
+    {% if tr.1 == 'R' %}
+        <h7> Your review at {{tr.0.time_created}}</h7>
+        <h6>{{tr.0.headline}} {{ "⭐⭐⭐⭐⭐"|slice:tr.0.rating }}</h6>
+        <h6>{{tr.0.body}}</h6>
+    {% else %}
+        <p>{{tr.0.title}}</p>
+        <p>{{tr.0.description}}</p>
+    {% endif %}
 
-{% for ticket in my_tickets %}
-    {% for review in ticket.review.all %}
-        {% if review %}
-            <h7> Your review at {{review.time_created}}</h7>
-            <h6>{{review.headline}} {{ "⭐⭐⭐⭐⭐"|slice:review.rating }}</h6>
-            <h6>{{review.body}}</h6>
-        {% endif %}
-    {% endfor %}
-
-    <h6>Ticket created by: {{ticket.user.username}}</h6>
-    <h5>Title: {{ticket.title}}</h5>
-    <h7>{{ticket.description}}</h7>
 {% endfor %}
-
-{% for ticket in other_tickets %}
-    <h6>Ticket created by: {{ticket.user.username}}</h6>
-    <h5>Title: {{ticket.title}}</h5>
-    <h7>{{ticket.description}}</h7>
-{% endfor %}
-
 {% endblock %}

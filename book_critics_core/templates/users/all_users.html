@@ -10,6 +10,24 @@
         <h3> My followers</h3>
         {% for follower in followers %}
             <h5>{{follower.user.username}}</h5>
+            
+            {% if follower.user in following_lst %}
+                <form action="{% url 'unfollow_user' %}", method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{follower.user.pk}}">
+                    <input type="hidden" name="name-initial"
+                         value="{{follower.user.username}}">
+                    <button type="submit" class="btn btn-primary">Unfollow</button>
+                </form>
+            {% else %}
+                <form action="{% url 'follow_user' %}", method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{follower.user.pk}}">
+                    <input type="hidden" name="name-initial" value="{{name_initial}}">
+                    <button type="submit" class="btn btn-primary">follow</button>
+                </form>
+            {% endif %}</br>
+
             <a href="http://localhost:8000/my_tickets/{{follower.user.pk}}">
                 <button type="submit" class="btn btn-primary">See profile</button>
             </a>
@@ -20,7 +38,19 @@
     <div class="col-6">
         <h3> Following</h3>
         {% for followed in follow_users %}
-            <h5>{{followed.user.username}}</h5>
+            <h5> 
+                {{followed.followed_user.username}}
+                    <form action="{% url 'unfollow_user' %}", method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{followed.followed_user.pk}}">
+                        <input type="hidden" name="name-initial"
+                         value="{{followed.followed_user.username}}">
+
+                        <button type="submit" class="btn btn-primary">Unfollow</button>
+                    </form>
+
+            </h5>
+
             <a href="http://localhost:8000/my_tickets/{{followed.user.pk}}">
                 <button type="submit" class="btn btn-primary">See profile</button>
             </a>
@@ -30,16 +60,30 @@
 
 <form action="{% url 'search_usr' %}" method='post'>
     {% csrf_token %}
-    <input type="text" name="init-username" id="search" placeholder="Search for users..">
-
+    <input type="text" name="init-username" id="search" placeholder="Search users..">
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
 <h5>The persons we found are</h5>
 {% for user in users %}
-<h5>{{user.username}}</h5>
-{% endfor %}
+    <h5>{{user.username}}</h5>
 
+        {% if user in check_follow %}
+            <form action="{% url 'unfollow_user' %}", method="post">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{user.pk}}">
+                <input type="hidden" name="name-initial" value="{{name_initial}}">
+                <button type="submit" class="btn btn-primary">Unfollow</button>
+            </form>
+        {% else %}
+            <form action="{% url 'follow_user' %}", method="post">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{user.pk}}">
+                <input type="hidden" name="name-initial" value="{{name_initial}}">
+                <button type="submit" class="btn btn-primary">follow</button>
+            </form>
+        {% endif %}
+{% endfor %}
 
 
 {% endblock %}

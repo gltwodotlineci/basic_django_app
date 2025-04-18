@@ -4,6 +4,8 @@ from .models import CustomUser, Ticket, Review, UserFollows
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import LoginForm, SignupForm, TicketForm, ReviewForm
+from django.db.models import Q
+from itertools import chain
 
 
 def home(request):
@@ -81,18 +83,26 @@ def send_followers_list(actual_usr: CustomUser)-> QuerySet:
     return followed_usr_lst
 
 
+
+def refacto_followers(user: CustomUser)-> tuple:
+    follower_users = user.following.all()
+    following_lst = [u.followed_user for u in follower_users]
+    followers = user.followed_user.all
+
+    return follower_users, following_lst, followers
+    
+
+
 @login_required(login_url='http://localhost:8000')
 def all_users(request):
-    user = request.user
-    followed_users = user.following.all()
-    followers = user.followed_user.all()
-    for follower in followers:
-        print(follower.user)
+    actual_user = request.user
+    followed_users, following_lst, followers = refacto_followers(actual_user)
 
     return render(request, 'users/all_users.html',
                   {
-                      'follow_users': followed_users,
-                      'followers': followers
+                    'follow_users': followed_users,
+                    'followers': followers,
+                    'following_lst': following_lst
                   }
                   )
 
@@ -100,7 +110,6 @@ def all_users(request):
 @login_required(login_url='http://localhost:8000')
 def show_profile(request):   
     user = request.user
-
     # Followed and follower
     followed_user = user.following.all()
     followers = user.followed_user.all()
@@ -118,20 +127,23 @@ def show_profile(request):
 @login_required(login_url='http://localhost:8000')
 def search_user(request):
     actual_user = request.user
-    followed_users = actual_user.following.all()
-    followers = actual_user.followed_user.all()
+    followed_users, following_lst, followers = refacto_followers(actual_user)
+ 
+    check_follow_lst = [us.followed_user for us in followed_users]
 
     if request.method == 'POST':
         name_initial = request.POST.get('init-username')
-        users = CustomUser.objects.filter(username__startswith=name_initial)
-        actual_user = request.user
+        users0 = CustomUser.objects.filter(username__istartswith=name_initial)
+        users = users0.exclude(uuid=actual_user.pk)
 
         return render(request, 'users/all_users.html',
                     context={'users': users,
                              'follow_users': followed_users,
                              'actual_user': actual_user,
                              'followers': followers,
-                            'name_initial': name_initial
+                             'name_initial': name_initial,
+                             'check_follow': check_follow_lst,
+                             'following_lst': following_lst
                             }
                         )
 
@@ -173,35 +185,19 @@ def follow_user(request):
     # Check if user you want to follow exists
     data = request.POST
     user_id = data.get('user_id')
-    name_initial = data.get('name-initial')
-    users = CustomUser.objects.filter(username__istartswith=name_initial)
-
     # Actual user
     actual_user = request.user
+    users = CustomUser.objects.exclude(uuid=actual_user.pk)
+
     try:
-        user_follow = CustomUser.objects.get(uuid=user_id)
+        user_follow = users.get(uuid=user_id)
         UserFollows.objects.create(user=actual_user,
                                     followed_user=user_follow)
-        
-        followed_user_lst = send_followers_list(actual_user)
-        
-        return render(request, 'users/all_users.html',
-                    context={'users': users,
-                             'actual_user': actual_user,
-                             'followed_user': followed_user_lst,
-                            'name_initial': name_initial
-                            }
-                        )
-    
+
     except CustomUser.DoesNotExist:
-        followed_user_lst = []
-        users = CustomUser.objects.all()
-        return render(request, 'users/all_users.html',
-                    context={'error': 'Error: this user does not exist',
-                            'users': users,
-                            'followed_user': followed_user_lst
-                            }
-                        )
+        pass
+
+    return redirect('all_users')
 
 
 # unfollow an actual user
@@ -210,29 +206,13 @@ def unfollow_user(request):
     actual_user = request.user
     data = request.POST
     followed = data.get('user_id')
-    name_initial = data.get('name-initial')
 
     followed_user = UserFollows.objects.filter(
         user=actual_user,
         followed_user=followed
     )
     followed_user.delete()
-    users = CustomUser.objects.filter(username__startswith=name_initial)
-
-    print('name_initial: ', name_initial)
-    try:
-        followed_user_lst = send_followers_list(actual_user)
-    except UserFollows.DoesNotExist:
-        followed_user_lst = []
-
-
-    return render(request, 'users/all_users.html',
-                    context={'users': users,
-                             'actual_user': actual_user,
-                             'followed_user': followed_user_lst,
-                            'name_initial': name_initial
-                            }
-                )
+    return redirect('all_users')
 
 
 '''
@@ -242,26 +222,42 @@ Ticket part
 @login_required(login_url='http://localhost:8000')
 def flux(request):
     user = request.user
-    my_tickets = Ticket.objects.filter(user=user)
-    my_tickets.order_by('-time_created')
     # Getting the ticket of users follower
     followed = UserFollows.objects.filter(user=user)
-    followed_usr_lst = CustomUser.objects.filter(pk__in=followed.values_list(
-        'followed_user', flat=True))
-    other_tickets = Ticket.objects.filter(user__in=followed_usr_lst)
-    other_tickets.order_by('-time_created')
-    ticket_form = TicketForm(request.POST or None)
-    review_form = ReviewForm(request.POST or None)
+    # all tickets, mine ticket than others
+    all_tickets = Ticket.objects.filter(Q(user=user)|
+                    Q(user__in=followed.values_list(# .values('followed_user')
+                    'followed_user', flat=True))                                        )
+    all_tickets.order_by('-time_created')
+
+    # Geting the reviews
+    following = user.followed_user.all()
+    following = [u.user for u in following]
+    following.append(user)
+    reviews2_others = Review.objects.filter(user__in=following)
+    reviews2_others.order_by('-time_created')
+
+    # creating a list of reviews and tickets
+    tickets_revies = list(chain(all_tickets, reviews2_others))
+    ticks_revs_sorted = sorted(tickets_revies,
+                               key=lambda obj: obj.time_created,
+                               reverse=True
+                               )
+
+    tickets_reviews = []
+    for tic_rev in ticks_revs_sorted:
+        if hasattr(tic_rev, 'title'):
+            tickets_reviews.append((tic_rev, 'T'))
+        else:
+            tickets_reviews.append((tic_rev, 'R'))
+
+
 
 
     return render(request, 'tickets/flux.html',
-                  {
-                      'my_tickets': my_tickets,
-                      'other_tickets': other_tickets,
-                      'ticket_form': ticket_form,
-                      'review_form': review_form
-                  }
+                  {'tickets_reviews': tickets_reviews}
                   )
+
 
 @login_required(login_url='http://localhost:8000')
 def ticket(request):
