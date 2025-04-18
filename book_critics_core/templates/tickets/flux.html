@@ -33,6 +33,39 @@
     {% else %}
         <p>{{tr.0.title}}</p>
         <p>{{tr.0.description}}</p>
+
+        {% if tr.0.image and tr.0.image.url %}
+            <img src="{{ tr.0.image.url }}" alt="{{tr.0.title}} img"
+                class="ticket-image"
+            ></br>
+        {% else %}
+            <p>No image available</p></br>
+        {% endif %}
+
+        {% if not tr.0.review.all %}
+        <dialog id="create-rev{{tr.0.pk}}">
+            <form action="" method="post">
+                {% csrf_token %}
+                {{form.as_p}}
+                <input type="hidden" name="ticket_id" value="{tr.0.pk}">
+                <button type="submit" class="btn btn-primary">
+                    Add
+                </button>
+            </form>
+            <button class="btn btn-primary"
+                    onclick="document.getElementById('create-rev{{tr.0.pk}}').close();">
+                Close
+            </button>
+
+        </dialog>
+
+        <button class="btn btn-primary" onclick="openDialogBox('create-rev{{tr.0.pk}}')"
+            data-bs-toggle="modal" data-bs-target="#exampleModal"
+        >
+            Add a review
+        </button></br>
+
+        {% endif%}
     {% endif %}
 
 {% endfor %}

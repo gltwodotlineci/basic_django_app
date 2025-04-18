@@ -251,11 +251,12 @@ def flux(request):
         else:
             tickets_reviews.append((tic_rev, 'R'))
 
-
-
-
+    # Sending the review form
+    reviw_form = ReviewForm(request.POST or None)
     return render(request, 'tickets/flux.html',
-                  {'tickets_reviews': tickets_reviews}
+                  {'tickets_reviews': tickets_reviews,
+                   'form': reviw_form
+                   }
                   )
 
 
@@ -270,7 +271,7 @@ def ticket(request):
 @login_required(login_url='http://localhost:8000')
 def create_ticket(request):
     if request.method == 'POST':
-        form = TicketForm(request.POST)
+        form = TicketForm(request.POST, request.FILES)
         if form.is_valid():
             title = form.cleaned_data['title']
             description = form.cleaned_data['description']
@@ -286,7 +287,7 @@ def create_ticket(request):
             return render(request, 'tickets/all_tickets.html',
                   context={'tickets': tickets}
                   )
-    ticket_form = TicketForm(request.POST or None)
+    ticket_form = TicketForm(request.POST, request.FILES)
     user = request.user
     ticket_form = TicketForm(initial={'username': user.username})
 

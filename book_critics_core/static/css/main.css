@@ -18,18 +18,34 @@ main{
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   border-radius: 10px;
-  background-color: #fff;
 }
+
+
+.image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;  /* Optional: vertical center */
+  width: 100%;
+  margin-top: 20px;     /* Optional: spacing */
+}
+
+.ticket-image {
+  width: 120px;
+  height: 170px;
+  object-fit: cover;
+}
+
+
 
 .nav-links {
     display: flex;
     gap: 20px;
     border-style: solid;
     border-width: thin;
-  }
+}
 
-  .nav-links a {
+.nav-links a {
     text-decoration: none;
     color: black;
     font-weight: 500;
-  }
+}

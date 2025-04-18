@@ -55,16 +55,18 @@ class SignupForm(forms.Form):
         password = self.cleaned_data.get('password')
         if len(password) < 5:
             raise forms.ValidationError("Password must be at least 5 characters long")
+        print("Password 1 ", password)
         return password
 
 
     def clean_password(self):
         confirm_password = self.cleaned_data.get('confirm_password')
         password = self.cleaned_data.get('password')        
-
+        print("password 2 ", confirm_password)
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match")
 
+        print(("password 1.1", self.password))
         return confirm_password
     
 

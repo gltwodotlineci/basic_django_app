@@ -1,6 +1,7 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -28,3 +29,7 @@ urlpatterns = [
     path('ticket_and_review/', views.ticket_and_review, name='ticketreview'),
     path('createticketreview/', views.create_tck_rvw, name='create-tck-rvw'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                document_root=settings.MEDIA_ROOT)

@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(max_length=100, unique=True, blank=True, null=True, verbose_name='email')
 
 
-class Ticket(models.Model):# Ajouter champ description
+class Ticket(models.Model):
     uuid = models.UUIDField(primary_key=True, unique=True, default=uuid4,  editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
@@ -18,7 +18,7 @@ class Ticket(models.Model):# Ajouter champ description
                              )
     description = models.TextField(max_length=350)
     title = models.CharField(max_length=128)
-    image = models.ImageField(blank=True, null=True)
+    image = models.ImageField(blank=True, null=True, upload_to='images/')
     time_created = models.DateTimeField(auto_now_add=True)
 
 
