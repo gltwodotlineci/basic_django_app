@@ -9,8 +9,8 @@ Review = apps.get_model('book_critics_core', 'Review')
 
 # Creating Login Form
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=50, label='Nom d\'utilisateur')
-    password = forms.CharField(widget=forms.PasswordInput, label='Mot de passe')
+    username = forms.CharField(max_length=50, label='User name')
+    password = forms.CharField(widget=forms.PasswordInput, label="Password")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -35,7 +35,6 @@ class SignupForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput, label='Passsword')
     confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirme your password')
 
-
     def clean_username(self):
         username = self.cleaned_data.get('username')
         if User.objects.filter(username=username).exists():
@@ -55,18 +54,17 @@ class SignupForm(forms.Form):
         password = self.cleaned_data.get('password')
         if len(password) < 5:
             raise forms.ValidationError("Password must be at least 5 characters long")
-        print("Password 1 ", password)
+
         return password
 
 
-    def clean_password(self):
+    def clean_confirm_password(self):
         confirm_password = self.cleaned_data.get('confirm_password')
         password = self.cleaned_data.get('password')        
-        print("password 2 ", confirm_password)
+
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match")
 
-        print(("password 1.1", self.password))
         return confirm_password
     
 
