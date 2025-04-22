@@ -24,14 +24,36 @@
         </a>
     </div>
 </div>
-
 {% for tr in tickets_reviews %}
     {% if tr.1 == 'R' %}
-        <h7> Your review at {{tr.0.time_created}}</h7>
-        <h6>{{tr.0.headline}} {{ "⭐⭐⭐⭐⭐"|slice:tr.0.rating }}</h6>
-        <h6>{{tr.0.body}}</h6>
+    <div clas="flux-container" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;
+    width: 50%; margin: auto; display: flex; flex-direction: column;
+    align-items: center;">
+            
+            <h8> <i>Review created at: {{tr.0.time_created}}</i></h8>
+            <h6>{{tr.0.headline}} {{ "⭐⭐⭐⭐⭐"|slice:tr.0.rating }}</h6>
+            <h6>{{tr.0.body}}</h6>
+        <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;
+        width: 80%; margin: auto; display: flex; flex-direction: column;
+        align-items: center;">
+            <h6>Ticket of the review</h6>
+            <h7>{{tr.0.ticket.title}} created at: {{tr.0.ticket.time_created}}</h7>
+            {% if tr.0.ticket.image %}
+                <img src="{{ tr.0.ticket.image.url }}" class="ticket-image">
+                </br>
+            {% else %}
+            <h7>No image avaiable for this ticket</h7>
+            {% endif %}
+            <h7>{{tr.0.ticket.description}}</h7>
+        </div>
+    </div>
+
     {% else %}
-        <p>{{tr.0.title}}</p>
+    <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;
+         width: 50%; margin: auto; display: flex; flex-direction: column;
+         align-items: center;">
+        
+        <h6><b>Title: {{tr.0.title}}</b> <i>created at: {{tr0.time_created}}</i></h6>
         <p>{{tr.0.description}}</p>
 
         {% if tr.0.image and tr.0.image.url %}
@@ -44,10 +66,10 @@
 
         {% if not tr.0.review.all %}
         <dialog id="create-rev{{tr.0.pk}}">
-            <form action="" method="post">
+            <form action="{% url 'create_review'%}" method="post">
                 {% csrf_token %}
                 {{form.as_p}}
-                <input type="hidden" name="ticket_id" value="{tr.0.pk}">
+                <input type="hidden" name="ticket_id" value="{{tr.0.pk}}">
                 <button type="submit" class="btn btn-primary">
                     Add
                 </button>
@@ -61,11 +83,12 @@
 
         <button class="btn btn-primary" onclick="openDialogBox('create-rev{{tr.0.pk}}')"
             data-bs-toggle="modal" data-bs-target="#exampleModal"
-        >
+            style="margin: 5px;"
+            >
             Add a review
         </button></br>
-
         {% endif%}
+    </div>
     {% endif %}
 
 {% endfor %}

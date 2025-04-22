@@ -24,9 +24,9 @@ main{
 .image-wrapper {
   display: flex;
   justify-content: center;
-  align-items: center;  /* Optional: vertical center */
+  align-items: center;
   width: 100%;
-  margin-top: 20px;     /* Optional: spacing */
+  margin-top: 20px;
 }
 
 .ticket-image {
@@ -35,17 +35,44 @@ main{
   object-fit: cover;
 }
 
-
-
-.nav-links {
+.navbar {
     display: flex;
+    justify-content: flex-end;
     gap: 20px;
+    padding: 10px;
     border-style: solid;
     border-width: thin;
 }
 
-.nav-links a {
+.navbar a {
     text-decoration: none;
-    color: black;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
     font-weight: 500;
+}
+
+.navbar a:hover {
+  background-color: rgb(90, 138, 233);
+  color: white;
+}
+
+.review-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: black;
+}
+
+.flux-container{
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  width: 50%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: aquamarine;
 }

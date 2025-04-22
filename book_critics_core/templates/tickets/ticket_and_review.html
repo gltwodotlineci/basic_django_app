@@ -4,14 +4,26 @@
 {% block content %}
 {% include 'base/navbar.html' %}
 
-<h2>You can create a Ticket and Review at the same time</h2>
+<div class="back-btn" style="margin:15px;"
+>
+<a href="javascript:history.back()" class="back-button" aria-label="Go back">
+    <svg xmlns="http://www.w3.org/2000/svg"
+     width="30" height="30" fill="currentColor" class="bi bi-arrow-90deg-left" viewBox="0 0 16 16"
+     >
+        <path fill-rule="evenodd" d="M1.146 4.854a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H12.5A2.5 2.5 0 0 1 15 6.5v8a.5.5 0 0 1-1 0v-8A1.5 1.5 0 0 0 12.5 5H2.707l3.147 3.146a.5.5 0 1 1-.708.708z"/>
+      </svg>
+</a>
+</div>
+
+<h5>You can create a Ticket and Review at the same time</h5>
 <form action="{% url 'create-tck-rvw' %}" method="post">
     {% csrf_token %}
-    <h3>Ticket</h3>
-    {{ ticket_form}}
+    <p><b>Ticket</b></p>
+    {{ ticket_form.as_p}}
 
-    <h3>Review</h3>
-    {{ review_form }}
+    <p><b>Review</b></p>
+
+    {{ review_form.as_p }}
     <button type="submit" class="btn btn-primary"
             data-bs-toggle="modal" data-bs-target="#exampleModal">
         Create Ticket and Review

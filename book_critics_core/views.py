@@ -445,19 +445,23 @@ Review part
 def create_review(request):
     user = request.user
     error = None
-
+    print("Genese.... ")
     if request.method == 'POST':
         try:
             ticket_id = request.POST.get('ticket_id')
+            print("Beforeee... ")
             ticket = Ticket.objects.get(uuid=ticket_id)
+            print('after... ', ticket_id)
             # Geting the ticket from the right user
+            
             tickets = Ticket.objects.filter(user=ticket.user).order_by('-time_created')
+            
             form = ReviewForm(request.POST)
+            
             if form.is_valid():
                 headline = form.cleaned_data['headline']
                 body = form.cleaned_data['body']
                 rating = form.cleaned_data['rating']
-                ticket = Ticket.objects.get(uuid=ticket_id)
                 # Creating the review
                 Review.objects.create(user=user,
                                       ticket=ticket,
@@ -472,7 +476,7 @@ def create_review(request):
                            'form': form2
                            }
                   )
-        
+
         except Ticket.DoesNotExist:
             error = 'The ticket does not exist'
 

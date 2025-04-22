@@ -4,9 +4,13 @@
 {% block content %}
 {% include 'base/navbar.html' %}
 
-    <h1> All Tickets of {{user.username}} </h1>
+    <h3> All Tickets of {{user.username}} </h3>
     {% for ticket in tickets %}
-        <h3>Ticket title: {{ticket.title}} </h3>
+        <h5>Ticket title: <b>{{ticket.title}}</b> </h5>
+        <h6>Description <b>{{ticket.description}}</b></h6>
+        <img src="{{ ticket.image.url }}" alt="{{tr.0.title}} img"
+                class="ticket-image"
+        ></br>
         <dialog id="delete{{ticket.pk}}">
             <h4>Are you sure to delete the Ticket {{ticket.title}}</h4>
             <form action="{% url 'delete_ticket' %}" method="post">
@@ -17,7 +21,7 @@
                 Yes
             </button>
             </form>
-            <button class="btn btn-primary"
+            <button class="btn btn-primary" 
                     onclick="document.getElementById('delete{{ticket.pk}}').close();">
                 Close
             </button>
@@ -47,18 +51,21 @@
                 Close
             </button>
         </dialog>
-            <button  class="btn btn-primary"
+        <div style="margin-top: 10px;">
+        {% if request.user == user %}
+            <button  class="btn btn-primary" 
                 onclick="openDialogBox('update{{ticket.pk}}')"
             >
                 Update
             </button>
 
 
-        <button class="btn btn-danger"
-                data-bs-toggle="modal" data-bs-target="#exampleModal"
-                onclick="openDialogBox('delete{{ticket.pk}}')">
-            Delete
-        </button>
+            <button class="btn btn-danger"
+                    data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    onclick="openDialogBox('delete{{ticket.pk}}')">
+                Delete
+            </button>
+        {% endif %}
         {% for review in ticket.review.all %}
             {% if review %}
                 <h6> Your review at {{review.time_created}}</review></h6>
@@ -70,25 +77,28 @@
 
         {% endfor %}
             
-    <dialog id="myDialog{{ticket.pk}}">
+            <dialog id="myDialog{{ticket.pk}}">
 
-        <form action="{% url 'create_review' %}" method="post" id="{{ticket.title}}">
-            {% csrf_token %}
-            {{form}}
-            <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
-            <button type="submit" class="btn btn-primary"
-                        data-bs-toggle="modal" data-bs-target="#exampleModal"
-                    >
-                Add Review
-            </button>
-            <button onclick="closeDialogBox('myDialog{{ticket.pk}}')">Close</button>
+                <form action="{% url 'create_review' %}" method="post" id="{{ticket.title}}">
+                    {% csrf_token %}
+                    {{form}}
+                    <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
+                    <button type="submit" class="btn btn-primary"
+                                data-bs-toggle="modal" data-bs-target="#exampleModal"
+                            >
+                        Add Review
+                    </button>
+                    <button onclick="closeDialogBox('myDialog{{ticket.pk}}')">Close</button>
 
-        </form>
-    </dialog>
-    <button onclick="openDialogBox('myDialog{{ticket.pk}}')"
-    id="openBtn" class="btn btn-primary">
-        Create Review
-    </button>
+                </form>
+                </dialog>
+                {% if not ticket.review.all %}
+                    <button onclick="openDialogBox('myDialog{{ticket.pk}}')"
+                    id="openBtn" class="btn btn-primary">
+                        Create Review
+                    </button>
+                {% endif %}
+        </div>
 
     {% endfor %}
 
