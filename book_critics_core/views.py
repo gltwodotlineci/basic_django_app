@@ -31,7 +31,9 @@ def login_user(request):
         
     form = LoginForm(request.POST or None)
     return render(request, 'base/home.html',
-                  context={'form': form}
+                  context={'form': form,
+                           'user': request.user
+                           }
                   )
 
 

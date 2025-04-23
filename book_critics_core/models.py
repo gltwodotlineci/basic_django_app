@@ -31,6 +31,8 @@ class Ticket(models.Model):
     title = models.CharField(max_length=128)
     image = models.ImageField(upload_to='images/')
     time_created = models.DateTimeField(auto_now_add=True)
+    time_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+
 
 
 class Review(models.Model):
