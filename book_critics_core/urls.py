@@ -10,7 +10,7 @@ urlpatterns = [
     path('inscription/', views.inscription, name='inscription'),
     path('logout/', views.logout_user, name='logout'),
     path('profile/', views.show_profile, name='profile'),
-    path('other_profile/<uuid:user_id>/', views.other_profile, name='other_profile'),
+    path('other_prof/<uuid:user_id>/', views.other_profile, name='other'),
     path('users/', views.all_users, name='all_users'),
     path('search_usr/', views.search_user, name='search_usr'),
     # Following process
@@ -32,4 +32,4 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
-                document_root=settings.MEDIA_ROOT)
+                          document_root=settings.MEDIA_ROOT)

@@ -93,8 +93,12 @@
             Add a review
         </button></br>
         {% endif%}
+        {% if tr.0.time_updated %}
+            <p>Updated at: {{tr.0.time_updated}}</p>
+        {% endif %}
+
+        {% endif %}
     </div>
-    {% endif %}
 
 {% endfor %}
 {% endblock %}

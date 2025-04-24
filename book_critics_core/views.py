@@ -1,5 +1,5 @@
 from django.db.models.query import QuerySet
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 from .models import CustomUser, Ticket, Review, UserFollows
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -15,8 +15,8 @@ def home(request):
     login_form = LoginForm(request.POST or None)
 
     return render(request, 'base/home.html',
-                      context={'form': login_form})
-    
+                  context={'form': login_form})
+
 
 # Login user
 def login_user(request):
@@ -27,8 +27,8 @@ def login_user(request):
             user = CustomUser.objects.get(username=username)
             login(request, user)
             return render(request, 'users/show.html',
-                        context={'user': username})
-        
+                          context={'user': username})
+
     form = LoginForm(request.POST or None)
     return render(request, 'base/home.html',
                   context={'form': form,
@@ -58,7 +58,7 @@ def inscription(request):
             email = form.cleaned_data['email']
             user = CustomUser.objects.create_user(username=username,
                                                   email=email,
-                                                   password=password)
+                                                  password=password)
 
             login(request, user)
             context = {'user': user}
@@ -66,8 +66,8 @@ def inscription(request):
 
     form = SignupForm(request.POST or None)
     return render(request, 'acces/signup.html',
-                context={'signup_form': form}
-                )
+                  context={'signup_form': form}
+                  )
 
 
 # Logout user
@@ -77,22 +77,20 @@ def logout_user(request):
 
 
 # sending followers list
-def send_followers_list(actual_usr: CustomUser)-> QuerySet:
+def send_followers_list(actual_usr: CustomUser) -> QuerySet:
     followers_obj = actual_usr.following.all()
-    followed_usr_lst = CustomUser.objects.filter(pk__in=followers_obj.values_list(
+    foll_usr_lst = CustomUser.objects.filter(pk__in=followers_obj.values_list(
         'followed_user', flat=True))
 
-    return followed_usr_lst
+    return foll_usr_lst
 
 
-
-def refacto_followers(user: CustomUser)-> tuple:
+def refacto_followers(user: CustomUser) -> tuple:
     follower_users = user.following.all()
     following_lst = [u.followed_user for u in follower_users]
     followers = user.followed_user.all
 
     return follower_users, following_lst, followers
-    
 
 
 @login_required(login_url='http://localhost:8000')
@@ -110,12 +108,11 @@ def all_users(request):
 
 
 @login_required(login_url='http://localhost:8000')
-def show_profile(request):   
+def show_profile(request):
     user = request.user
     # Followed and follower
     followed_user = user.following.all()
     followers = user.followed_user.all()
-
 
     return render(request, 'users/show.html',
                   context={'user': user,
@@ -130,7 +127,7 @@ def show_profile(request):
 def search_user(request):
     actual_user = request.user
     followed_users, following_lst, followers = refacto_followers(actual_user)
- 
+
     check_follow_lst = [us.followed_user for us in followed_users]
 
     if request.method == 'POST':
@@ -139,15 +136,14 @@ def search_user(request):
         users = users0.exclude(uuid=actual_user.pk)
 
         return render(request, 'users/all_users.html',
-                    context={'users': users,
-                             'follow_users': followed_users,
-                             'actual_user': actual_user,
-                             'followers': followers,
-                             'name_initial': name_initial,
-                             'check_follow': check_follow_lst,
-                             'following_lst': following_lst
-                            }
-                        )
+                      context={'users': users,
+                               'follow_users': followed_users,
+                               'actual_user': actual_user,
+                               'followers': followers,
+                               'name_initial': name_initial,
+                               'check_follow': check_follow_lst,
+                               'following_lst': following_lst
+                               })
 
     return redirect('all_users')
 
@@ -160,7 +156,8 @@ def other_profile(request, user_id):
         other_user = CustomUser.objects.get(uuid=user_id)
         actual_user = request.user
     except CustomUser.DoesNotExist:
-        return render(request, 'base/home.html', context={'error': 'Cet utilisateur n\'existe pas'})    
+        error = 'Cet utilisateur n\'existe pas'
+        return render(request, 'base/home.html', context={'error': error})
 
     followed_users = UserFollows.objects.filter(user=other_user)
     followers = UserFollows.objects.filter(followed_user=other_user)
@@ -194,7 +191,7 @@ def follow_user(request):
     try:
         user_follow = users.get(uuid=user_id)
         UserFollows.objects.create(user=actual_user,
-                                    followed_user=user_follow)
+                                   followed_user=user_follow)
 
     except CustomUser.DoesNotExist:
         pass
@@ -220,6 +217,8 @@ def unfollow_user(request):
 '''
 Ticket part
 '''
+
+
 # Flux
 @login_required(login_url='http://localhost:8000')
 def flux(request):
@@ -227,9 +226,10 @@ def flux(request):
     # Getting the ticket of users follower
     followed = UserFollows.objects.filter(user=user)
     # all tickets, mine ticket than others
-    all_tickets = Ticket.objects.filter(Q(user=user)|
-                    Q(user__in=followed.values_list(# .values('followed_user')
-                    'followed_user', flat=True))                                        )
+    all_tickets = Ticket.objects.filter(Q(user=user) |
+                                        Q(user__in=followed.values_list(
+                                              'followed_user',
+                                              flat=True)))
     all_tickets.order_by('-time_created')
 
     # Geting the reviews
@@ -280,15 +280,15 @@ def create_ticket(request):
             image = form.cleaned_data['image']
             # Creating the ticket
             new_ticket = Ticket.objects.create(user=request.user,
-                                 title=title,
-                                 description=description,
-                                 image=image
-                                 )
+                                               title=title,
+                                               description=description,
+                                               image=image
+                                               )
             tickets = Ticket.objects.filter(user=new_ticket.user)
             tickets.order_by('-time_created')
             return render(request, 'tickets/all_tickets.html',
-                  context={'tickets': tickets}
-                  )
+                          context={'tickets': tickets}
+                          )
     ticket_form = TicketForm(request.POST, request.FILES)
     user = request.user
     ticket_form = TicketForm(initial={'username': user.username})
@@ -298,10 +298,10 @@ def create_ticket(request):
                     'form': ticket_form,
                     }
                   )
-    
+
 
 # Factorizing review form
-def refactor_review_form(request)-> ReviewForm:
+def refactor_review_form(request) -> ReviewForm:
     review_form = ReviewForm(request.POST or None)
     # review_form = ReviewForm(initial={'username': user.username})
     return review_form
@@ -330,7 +330,7 @@ def my_tickets(request, user_id):
 def ticket_and_review(request):
     ticket_form = TicketForm(request.POST or None)
     review_form = ReviewForm(request.POST or None)
-    
+
     return render(request, 'tickets/ticket_and_review.html',
                   context={
                         'ticket_form': ticket_form,
@@ -394,7 +394,7 @@ def create_tck_rvw(request):
 
 
 # update ticket
-def update_tck(request):#, ticket_id):
+def update_tck(request):
     user = request.user
     if request.method == "POST":
         data = request.POST
@@ -415,9 +415,9 @@ def update_tck(request):#, ticket_id):
         except Ticket.DoesNotExist:
             error = "The ticked you updated does not exists"
             return render(request, 'users/show.html',
-                        context={'user': user.username,
-                                 'error': error
-                                 })
+                          context={'user': user.username,
+                                   'error': error
+                                   })
 
 
 # delete ticket
@@ -438,11 +438,13 @@ def delete_ticket(request):
                         'user': request.user
                           }
                       )
-    
+
 
 '''
 Review part
 '''
+
+
 @login_required(login_url='http://localhost:8000')
 def create_review(request):
     user = request.user
@@ -453,13 +455,12 @@ def create_review(request):
             ticket_id = request.POST.get('ticket_id')
             print("Beforeee... ")
             ticket = Ticket.objects.get(uuid=ticket_id)
-            print('after... ', ticket_id)
             # Geting the ticket from the right user
-            
-            tickets = Ticket.objects.filter(user=ticket.user).order_by('-time_created')
-            
+            tickets = Ticket.objects.filter(user=ticket.user)
+            tickets.order_by('-time_created')
+
             form = ReviewForm(request.POST)
-            
+
             if form.is_valid():
                 headline = form.cleaned_data['headline']
                 body = form.cleaned_data['body']
@@ -473,20 +474,17 @@ def create_review(request):
                                       )
                 form2 = refactor_review_form(request)
                 return render(request, 'tickets/all_tickets.html',
-                  context={'ticket': ticket,
-                           'tickets': tickets,
-                           'form': form2
-                           }
-                  )
+                              context={'ticket': ticket,
+                                       'tickets': tickets,
+                                       'form': form2
+                                       })
 
         except Ticket.DoesNotExist:
             error = 'The ticket does not exist'
 
         review_form = refactor_review_form(request)
         return render(request, 'tickets/all_tickets.html',
-                        context={
-                                'error': error,
-                                'form': review_form,
-                                'tickets': tickets
-                                }
-                        )
+                      context={'error': error,
+                               'form': review_form,
+                               'tickets': tickets
+                               })
