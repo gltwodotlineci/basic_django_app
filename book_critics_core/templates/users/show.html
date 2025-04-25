@@ -7,8 +7,8 @@
     <h1> Welcome mr {{user.username}}!</h1>
 
         </div></br>
-        <div class="row">
-            <div class="col-6">
+        <div class="row" style="margin: 25px;">
+            <div class="col-4">
                 <a href="{% url 'my_tickets' request.user.pk %}">
                     <button type="submit" class="btn btn-primary"
                         data-bs-toggle="modal" data-bs-target="#exampleModal"
@@ -17,7 +17,16 @@
                     </button>
                 </a>
             </div>
-            <div class="col-6">
+
+            <div class="col-4">
+                <a href="{% url 'ticket' %}" style="margin-right: 35px;">
+                    <button type="submit" class="btn btn-primary">
+                        Create Ticket
+                    </button>
+                </a>
+            </div>
+
+            <div class="col-4">
                 <a href="{% url 'all_users' %}">
                     <button type="submit" class="btn btn-primary"
                         data-bs-toggle="modal" data-bs-target="#exampleModal"
