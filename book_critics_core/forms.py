@@ -33,7 +33,8 @@ class SignupForm(forms.Form):
     username = forms.CharField(max_length=50, label='User name')
     email = forms.EmailField(max_length=100, label='email')
     password = forms.CharField(widget=forms.PasswordInput, label='Passsword')
-    confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirme your password')
+    confirm_password = forms.CharField(widget=forms.PasswordInput,
+                                       label='Confirme your password')
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
@@ -42,31 +43,29 @@ class SignupForm(forms.Form):
 
         return username
 
-
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("The email is already taken")
         return email
 
-
     def clean_password(self):
         password = self.cleaned_data.get('password')
         if len(password) < 5:
-            raise forms.ValidationError("Password must be at least 5 characters long")
+            message = "Password must be at least 5 characters long"
+            raise forms.ValidationError(message)
 
         return password
 
-
     def clean_confirm_password(self):
         confirm_password = self.cleaned_data.get('confirm_password')
-        password = self.cleaned_data.get('password')        
+        password = self.cleaned_data.get('password')
 
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match")
 
         return confirm_password
-    
+
 
 # Creating Ticket Form ModelForm
 class TicketForm(forms.ModelForm):
@@ -84,19 +83,18 @@ class TicketForm(forms.ModelForm):
         return title
 
 
-
 # Creating Review Form
-RATING_CHOICES = [(i, str(i)) for i in range(1,6)] 
+RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
+
 
 class ReviewForm(forms.ModelForm):
-    
+
     class Meta:
         model = Review
         fields = ['headline', 'body', 'rating']
         widgets = {
             'rating': forms.RadioSelect(choices=RATING_CHOICES)
         }
-
 
     def clean_headline(self):
         headline = self.cleaned_data.get('headline')
