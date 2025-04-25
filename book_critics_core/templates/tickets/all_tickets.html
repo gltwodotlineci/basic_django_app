@@ -16,14 +16,14 @@
             <form action="{% url 'delete_ticket' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
-            <button class="btn btn-danger"
-                    onclick="document.getElementById('delete{{ticket.pk}}').close();">
-                Yes
-            </button>
+                <button class="btn btn-danger"
+                        onclick="document.getElementById('delete{{ticket.pk}}').close();">
+                    Yes
+                </button>
             </form>
-            <button class="btn btn-primary" 
-                    onclick="document.getElementById('delete{{ticket.pk}}').close();">
-                Close
+            <button class="btn btn-primary" style="margin-top: 10px;"
+            onclick="document.getElementById('delete{{ticket.pk}}').close();">
+                X
             </button>
         </dialog>
         <dialog id="update{{ticket.pk}}">
@@ -43,13 +43,13 @@
                 <button type="submit" class="btn btn-primary">
                     Update
                 </button>
-            </form>
-
 
             <button class="btn btn-primary"
                     onclick="document.getElementById('update{{ticket.pk}}').close();">
                 Close
             </button>
+        </form>
+
         </dialog>
         <div style="margin-top: 10px;">
         {% if request.user == user %}
@@ -83,12 +83,16 @@
                     {% csrf_token %}
                     {{form}}
                     <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
-                    <button type="submit" class="btn btn-primary"
+                    <button type="submit" class="btn btn-success"
                                 data-bs-toggle="modal" data-bs-target="#exampleModal"
                             >
-                        Add Review
+                        Add
                     </button>
-                    <button onclick="closeDialogBox('myDialog{{ticket.pk}}')">Close</button>
+                    <button onclick="closeDialogBox('myDialog{{ticket.pk}}')"
+                    type="submit" class="btn btn-primary"
+                    data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        X
+                    </button>
 
                 </form>
                 </dialog>

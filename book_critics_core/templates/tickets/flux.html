@@ -5,24 +5,18 @@
 
 {% include 'base/navbar.html' %}
 </br>
-<div class="row">
-    <div class="col-6">
-        <div class="col-6">
-            <a href="{% url 'ticket' %}">
-                <button type="submit" class="btn btn-primary">
-                    Create Ticket
-                </button>
-            </a>
-    </div>
+<div class="col" style="margin: 25px;">
+        <a href="{% url 'ticket' %}" style="margin-right: 35px;">
+            <button type="submit" class="btn btn-primary">
+                Create Ticket
+            </button>
+        </a>
 
-    </div>
-    <div class="col-6">
         <a href="{% url 'ticketreview' %}">
             <button type="submit" class="btn btn-primary">
                 Create Ticket and Review
             </button>
         </a>
-    </div>
 </div>
 {% for tr in tickets_reviews %}
     {% if tr.1 == 'R' %}
@@ -75,14 +69,15 @@
                 {% csrf_token %}
                 {{form.as_p}}
                 <input type="hidden" name="ticket_id" value="{{tr.0.pk}}">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-success"
+                        data-bs-toggle="modal" data-bs-target="#exampleModal">
                     Add
                 </button>
+                <button class="btn btn-primary"
+                        onclick="document.getElementById('create-rev{{tr.0.pk}}').close();">
+                    X
+                </button>
             </form>
-            <button class="btn btn-primary"
-                    onclick="document.getElementById('create-rev{{tr.0.pk}}').close();">
-                Close
-            </button>
 
         </dialog>
 
