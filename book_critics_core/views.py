@@ -129,11 +129,18 @@ def search_user(request):
     followed_users, following_lst, followers = refacto_followers(actual_user)
 
     check_follow_lst = [us.followed_user for us in followed_users]
-
+    find_msg = "The person(s) we found are"
+    users = None
     if request.method == 'POST':
         name_initial = request.POST.get('init-username')
-        users0 = CustomUser.objects.filter(username__istartswith=name_initial)
-        users = users0.exclude(uuid=actual_user.pk)
+        if len(name_initial) < 2:
+            find_msg = "Please enter an initial with at least 2 characters"
+        else:
+            usr = CustomUser.objects.all()
+            users0 = usr.filter(username__istartswith=name_initial)
+            users = users0.exclude(uuid=actual_user.pk)
+            if not users0.exists():
+                find_msg = f"No user found with the initial '{name_initial}'"
 
         return render(request, 'users/all_users.html',
                       context={'users': users,
@@ -142,7 +149,8 @@ def search_user(request):
                                'followers': followers,
                                'name_initial': name_initial,
                                'check_follow': check_follow_lst,
-                               'following_lst': following_lst
+                               'following_lst': following_lst,
+                               'find_msg': find_msg
                                })
 
     return redirect('all_users')

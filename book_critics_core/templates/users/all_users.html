@@ -63,27 +63,29 @@
     <input type="text" name="init-username" id="search" placeholder="Search users..">
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
+{% if users != '' %}
+    <h5>{{find_msg}}</h5>
+    {% for user in users %}
+        <h5>{{user.username}}</h5>
 
-<h5>The persons we found are</h5>
-{% for user in users %}
-    <h5>{{user.username}}</h5>
-
-        {% if user in check_follow %}
-            <form action="{% url 'unfollow_user' %}", method="post">
-                {% csrf_token %}
-                <input type="hidden" name="user_id" value="{{user.pk}}">
-                <input type="hidden" name="name-initial" value="{{name_initial}}">
-                <button type="submit" class="btn btn-primary">Unfollow</button>
-            </form>
-        {% else %}
-            <form action="{% url 'follow_user' %}", method="post">
-                {% csrf_token %}
-                <input type="hidden" name="user_id" value="{{user.pk}}">
-                <input type="hidden" name="name-initial" value="{{name_initial}}">
-                <button type="submit" class="btn btn-primary">follow</button>
-            </form>
-        {% endif %}
-{% endfor %}
-
+            {% if user in check_follow %}
+                <form action="{% url 'unfollow_user' %}", method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{user.pk}}">
+                    <input type="hidden" name="name-initial" value="{{name_initial}}">
+                    <button type="submit" class="btn btn-primary">Unfollow</button>
+                </form>
+            {% else %}
+                <form action="{% url 'follow_user' %}", method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{user.pk}}">
+                    <input type="hidden" name="name-initial" value="{{name_initial}}">
+                    <button type="submit" class="btn btn-primary">follow</button>
+                </form>
+            {% endif %}
+    {% endfor %}
+    {% else %}
+        <h5> We could not find any user with this name</h5>
+    {% endif %}
 
 {% endblock %}
