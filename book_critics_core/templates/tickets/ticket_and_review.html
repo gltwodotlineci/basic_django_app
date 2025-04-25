@@ -16,14 +16,24 @@
 </div>
 
 <h5>You can create a Ticket and Review at the same time</h5>
-<form action="{% url 'create-tck-rvw' %}" method="post">
+<form action="{% url 'create-tck-rvw' %}" method="post"
+enctype="multipart/form-data">
+
     {% csrf_token %}
     <p><b>Ticket</b></p>
     {{ ticket_form.as_p}}
 
+    {{ ticket_form.non_field_errors }}
+    {{ ticket_form.title.errors }}
+    {{ ticket_form.description.errors }}
+
     <p><b>Review</b></p>
 
     {{ review_form.as_p }}
+
+    {{ review_form.non_field_errors }}
+    {{ review_form.title.errors }}
+    {{ review_form.description.errors }}
     <button type="submit" class="btn btn-primary"
             data-bs-toggle="modal" data-bs-target="#exampleModal">
         Create Ticket and Review
