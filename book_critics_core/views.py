@@ -246,9 +246,10 @@ def flux(request):
     all_tickets.order_by('-time_created')
 
     # Geting the reviews
-    following = user.followed_user.all()
-    following = [u.user for u in following]
+    following = user.following.all()
+    following = [u.followed_user for u in following]
     following.append(user)
+
     reviews2_others = Review.objects.filter(user__in=following)
     reviews2_others.order_by('-time_created')
 
@@ -450,7 +451,6 @@ Review part
 def create_review(request):
     user = request.user
     error = None
-    print("Genese.... ")
     if request.method == 'POST':
         try:
             ticket_id = request.POST.get('ticket_id')
@@ -473,12 +473,13 @@ def create_review(request):
                                       body=body,
                                       rating=rating
                                       )
-                form2 = refactor_review_form(request)
-                return render(request, 'tickets/all_tickets.html',
-                              context={'ticket': ticket,
-                                       'tickets': tickets,
-                                       'form': form2
-                                       })
+                # form2 = refactor_review_form(request)
+                # return render(request, 'tickets/all_tickets.html',
+                #               context={'ticket': ticket,
+                #                        'tickets': tickets,
+                #                        'form': form2
+                #                        })
+                return redirect('flux')
 
         except Ticket.DoesNotExist:
             error = 'The ticket does not exist'
