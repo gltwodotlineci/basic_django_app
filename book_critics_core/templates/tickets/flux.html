@@ -24,7 +24,7 @@
     width: 50%; margin: auto; display: flex; flex-direction: column;
     align-items: center;">
             
-            <h8> <i>Review created at: {{tr.0.time_created}}</i></h8>
+            <h8> <i>Review created by <b>{{tr.0.user.username}}</b> at: {{tr.0.time_created}}</i></h8>
             <h6>{{tr.0.headline}} {{ "⭐⭐⭐⭐⭐"|slice:tr.0.rating }}</h6>
             <h6>{{tr.0.body}}</h6>
         <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;

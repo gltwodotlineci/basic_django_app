@@ -77,25 +77,28 @@
 
         {% endfor %}
             
-            <dialog id="myDialog{{ticket.pk}}">
+        <dialog id="myDialog{{ ticket.pk }}">
+            <form action="{% url 'create_review' %}" method="post" id="{{ticket.title}}">
+                {% csrf_token %}
+                {{ form.as_p }}
 
-                <form action="{% url 'create_review' %}" method="post" id="{{ticket.title}}">
-                    {% csrf_token %}
-                    {{form}}
-                    <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
-                    <button type="submit" class="btn btn-success"
-                                data-bs-toggle="modal" data-bs-target="#exampleModal"
-                            >
-                        Add
-                    </button>
-                    <button onclick="closeDialogBox('myDialog{{ticket.pk}}')"
-                    type="submit" class="btn btn-primary"
-                    data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        X
-                    </button>
+                {% if ticket.pk|stringformat:"s" == ticket_id %}
+                    {{ form.non_field_errors }}
+                    {{ form.title.errors }}
+                    {{ form.description.errors }}
+                {% endif %}
 
-                </form>
-                </dialog>
+                <input type="hidden" name="ticket_id" value="{{ ticket.pk }}">
+
+                <button type="submit" class="btn btn-success">
+                    Add
+                </button>
+                <button onclick="closeDialogBox('myDialog{{ ticket.pk }}')" type="button" class="btn btn-primary">
+                    X
+                </button>
+            </form>
+        </dialog>
+
                 {% if not ticket.review.all %}
                     <button onclick="openDialogBox('myDialog{{ticket.pk}}')"
                     id="openBtn" class="btn btn-primary">

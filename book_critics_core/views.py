@@ -26,8 +26,13 @@ def login_user(request):
             username = form.cleaned_data['username']
             user = CustomUser.objects.get(username=username)
             login(request, user)
+            followed_user = user.following.all()
+            followers = user.followed_user.all()
+
             return render(request, 'users/show.html',
-                          context={'user': username})
+                          context={'user': user,
+                                   'followed_user': followed_user,
+                                   "followers": followers})
 
     form = LoginForm(request.POST or None)
     return render(request, 'base/home.html',

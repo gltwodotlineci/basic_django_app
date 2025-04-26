@@ -6,6 +6,12 @@ from uuid import uuid4
 
 
 class CustomUser(AbstractUser):
+    """
+    Custom user model that extends the default Django user model.
+    Attributes:
+        uuid (UUIDField): A unique identifier for the user.
+        email (EmailField): The user's email address.
+    """
     uuid = models.UUIDField(primary_key=True,
                             unique=True,
                             default=uuid4,
@@ -18,6 +24,17 @@ class CustomUser(AbstractUser):
 
 
 class Ticket(models.Model):
+    """
+    Model representing a ticket that will be created by a user.
+    Attributes:
+        uuid (UUIDField): A unique identifier for the ticket.
+        user (ForeignKey): The user who created the ticket.
+        description (TextField): A description of the ticket.
+        title (CharField): The title of the ticket.
+        image (ImageField): An image associated with the ticket.
+        time_created (DateTimeField): The time when the ticket was created.
+        time_updated (DateTimeField): Updating time of the ticket.
+    """
     uuid = models.UUIDField(primary_key=True,
                             unique=True,
                             default=uuid4,
@@ -35,6 +52,18 @@ class Ticket(models.Model):
 
 
 class Review(models.Model):
+    """
+    Model representing a review for a ticket. It will be created by a user.
+    and will be linked to a ticket.
+    Attributes:
+        uuid (UUIDField): A unique identifier for the review.
+        user (ForeignKey): The user who wrote the review.
+        ticket (ForeignKey): The ticket being reviewed.
+        rating (PositiveSmallIntegerField): The rating given to the ticket.
+        headline (CharField): The headline of the review.
+        body (TextField): The body of the review.
+        time_created (DateTimeField): The time when the review was created.
+    """
     uuid = models.UUIDField(primary_key=True,
                             unique=True,
                             default=uuid4,
@@ -59,6 +88,15 @@ class Review(models.Model):
 
 
 class UserFollows(models.Model):
+    """
+    This model is used to manage the follow relationships between users.
+    There will be a unique constraint on the combination of user and
+    followed_user.
+    Attributes:
+        uuid (UUIDField): A unique identifier for the follow relationship.
+        user (ForeignKey): The user who is following another user.
+        followed_user (ForeignKey): The user being followed.
+    """
     uuid = models.UUIDField(primary_key=True,
                             unique=True,
                             default=uuid4,
