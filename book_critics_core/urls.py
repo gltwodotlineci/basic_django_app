@@ -25,6 +25,8 @@ urlpatterns = [
     path('delete_ticket/', views.delete_ticket, name='delete_ticket'),
     # Reviews
     path('create_review/', views.create_review, name='create_review'),
+    path('update_review/', views.update_review, name='update_review'),
+    path('delete_review/', views.delete_review, name='delete_review'),
     # Ticket & Review
     path('ticket_and_review/', views.ticket_and_review, name='ticketreview'),
     path('createticketreview/', views.create_tck_rvw, name='create-tck-rvw'),

@@ -429,8 +429,34 @@ def update_tck(request):
                                    })
 
 
-# delete ticket
+def update_review(request):
+    # update review created by the user
+    user = request.user
+    if request.method == "POST":
+        data = request.POST
+        review_id = data.get('review_id')
+        ticket_id = data.get('ticket_id')
+        try:
+            review = Review.objects.get(uuid=review_id)
+            ticket = Ticket.objects.get(uuid=ticket_id)
+            if review.user != user and ticket.user != user:
+                return redirect('flux')
+            review.headline = data.get('headline')
+            review.body = data.get('body')
+            rating = data.get('rating')
+            if rating is not None:
+                review.rating = data.get('rating')
+                review.rating = int(rating)
+            review.save()
+        except (Review.DoesNotExist, Ticket.DoesNotExist):
+            error = "The review or ticket you updated does not exists"
+            print(error)
+
+    return redirect('flux')
+
+
 def delete_ticket(request):
+    # delete ticket
     data = request.POST
     ticket_id = data.get('ticket_id')
     ticket = Ticket.objects.get(uuid=ticket_id)
@@ -447,6 +473,23 @@ def delete_ticket(request):
                         'user': request.user
                           }
                       )
+
+
+def delete_review(request):
+    # delete review
+    if request.method == 'POST':
+        data = request.POST
+        review_id = data.get('review_id')
+        try:
+            review = Review.objects.get(uuid=review_id)
+            if request.user == review.user:
+                review.delete()
+                return redirect('flux')
+        except Review.DoesNotExist:
+            error = "The review you want to delete does not exists"
+            print(error)
+
+    return redirect('flux')
 
 
 '''

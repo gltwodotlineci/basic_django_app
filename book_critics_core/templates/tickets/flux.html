@@ -27,6 +27,67 @@
             <h8> <i>Review created by <b>{{tr.0.user.username}}</b> at: {{tr.0.time_created}}</i></h8>
             <h6>{{tr.0.headline}} {{ "⭐⭐⭐⭐⭐"|slice:tr.0.rating }}</h6>
             <h6>{{tr.0.body}}</h6>
+
+            <dialog id="update-rev{{tr.0.pk}}">
+                <form action="{% url 'update_review' %}" method="post">
+                    {% csrf_token %}
+                        <label>Headline</label><br>
+                        <input type="text" value="{{tr.0.headline}}" name="headline"
+                        value="{{tr.0.headline}}"><br>
+                        <label>Body</label><br>
+                        <textarea name="body">{{tr.0.body}}</textarea><br>
+                        <label>Rating</label><br>
+                        <label><input type="radio" name="rating" value="1"> 1</label>
+                        <label><input type="radio" name="rating" value="2"> 2</label>
+                        <label><input type="radio" name="rating" value="3"> 3</label>
+                        <label><input type="radio" name="rating" value="4"> 4</label>
+                        <label><input type="radio" name="rating" value="5"> 5</label>
+                        <br><br>
+
+                    <input type="hidden" name="ticket_id" value="{{tr.0.ticket.pk}}">
+                    <input type="hidden" name="review_id" value="{{tr.0.pk}}">
+                    <button type="submit" class="btn btn-success"
+                            data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Update
+                    </button>
+                </form>
+                <button class="btn btn-primary" style="margin: 10px;"
+                onclick="document.getElementById('update-rev{{tr.0.pk}}').close();">
+                    X
+                </button>
+            </dialog>
+
+            <dialog id="delete-rev{{tr.0.pk}}">
+                <h6>Are you sure to delete this Review</h6>
+                <form action="{% url 'delete_review' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="review_id" value="{{tr.0.pk}}">
+                    <button class="btn btn-danger" style="margin-top: 10px;"
+                    onclick="document.getElementById('delete-rev{{tr.0.pk}}').close();">
+                        Yes
+                    </button>
+                </form>
+                <button class="btn btn-primary" style="margin-top: 10px;"
+                onclick="document.getElementById('delete-rev{{tr.0.pk}}').close();">
+                    X
+                </button>
+            </dialog>
+
+            {% if tr.0.user == request.user %}
+                <div class="col" style="margin: 10px;">
+                    <button onclick="openDialogBox('update-rev{{tr.0.pk}}')"
+                    class="btn btn-primary" style="margin: 10px;">
+                        Update Review
+                    </button>
+
+                    <button class="btn btn-danger"
+                    data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    onclick="openDialogBox('delete-rev{{tr.0.pk}}')">
+                        Delete Review
+                    </button>
+                </div>
+
+            {% endif %}
         <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;
         width: 80%; margin: auto; display: flex; flex-direction: column;
         align-items: center;">
