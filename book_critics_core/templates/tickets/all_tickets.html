@@ -28,7 +28,8 @@
         </dialog>
         <dialog id="update{{ticket.pk}}">
             <h4>Updating your ticket {{ticket.title}} </h4>
-            <form action="{% url 'update_tc' %}" method="post">
+            <form action="{% url 'update_tc' %}" method="post"
+            enctype="multipart/form-data">
                 {% csrf_token %}
                 <label>Title</label></br>
                 <input type="text" value="{{ticket.title}}" name="ticket_title">
@@ -39,6 +40,12 @@
                     {{ticket.description}}
                 </textarea>
                 </br>
+                <br>
+                <div style="margin-bottom: 15px;">
+                    <lable>New image</lable>
+                    <input type="file" name="image">
+                </div>
+
                 <input type="hidden" name="ticket_id" value="{{ticket.pk}}">
                 <button type="submit" class="btn btn-primary">
                     Update

@@ -1,3 +1,0 @@
-ipdb
-Django==4.2
-flake8

@@ -403,9 +403,16 @@ def update_tck(request):
         ticket_id = data.get('ticket_id')
         try:
             ticket = Ticket.objects.get(uuid=ticket_id)
+            # Checking if the ticket belongs to the user
+            if ticket.user != user:
+                return redirect('my_tickets')
+
             ticket.title = data.get('ticket_title')
             ticket.description = data.get('description')
+            if 'image' in request.FILES:
+                ticket.image = request.FILES['image']
             ticket.save()
+
             tickets = Ticket.objects.filter(user=ticket.user)
             form = ReviewForm(request.POST or None)
             return render(request, 'tickets/all_tickets.html',
