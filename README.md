@@ -47,3 +47,16 @@ Now we can launch our application by using the next command.
 ```bash
 ./manage.py runserver
 ```
+______________________
+### Testing with the existing datas
+#### If you want to test you have this data
+**Users:**
+glen0
+glen1
+glen2
+anna
+andrea
+brayan
+bledi
+The password is the same for all of them:
+testtest
