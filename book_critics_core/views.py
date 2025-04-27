@@ -1,4 +1,3 @@
-from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect
 from .models import CustomUser, Ticket, Review, UserFollows
 from django.contrib.auth import login, logout
@@ -9,6 +8,9 @@ from itertools import chain
 
 
 def home(request):
+    """
+    Home page
+    """
     if request.user.is_authenticated:
         return redirect('profile')
 
@@ -18,8 +20,12 @@ def home(request):
                   context={'form': login_form})
 
 
-# Login user
 def login_user(request):
+    """
+    Login user. Check if the user is already authenticated
+    and redirect to the profile page if so.
+    If not, check if the form is valid
+    """
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -44,6 +50,11 @@ def login_user(request):
 
 # Inscription page
 def signup(request):
+    """
+    Signup page. Check if the user is already authenticated
+    and redirect to the profile page if so. If not, send the
+    signup form to the template.
+    """
     if request.user.is_authenticated:
         return redirect('profile')
 
@@ -55,6 +66,9 @@ def signup(request):
 
 def inscription(request):
     if request.method == 'POST':
+        """
+        Check if the form is valid and create the user
+        """
         form = SignupForm(request.POST)
 
         if form.is_valid():
@@ -77,20 +91,17 @@ def inscription(request):
 
 # Logout user
 def logout_user(request):
+    """
+    Logout user
+    """
     logout(request)
     return redirect("home")
 
 
-# sending followers list
-def send_followers_list(actual_usr: CustomUser) -> QuerySet:
-    followers_obj = actual_usr.following.all()
-    foll_usr_lst = CustomUser.objects.filter(pk__in=followers_obj.values_list(
-        'followed_user', flat=True))
-
-    return foll_usr_lst
-
-
 def refacto_followers(user: CustomUser) -> tuple:
+    """
+    Refactored function to get the list of followers
+    """
     follower_users = user.following.all()
     following_lst = [u.followed_user for u in follower_users]
     followers = user.followed_user.all
@@ -100,6 +111,10 @@ def refacto_followers(user: CustomUser) -> tuple:
 
 @login_required(login_url='http://localhost:8000')
 def all_users(request):
+    """
+    Show users
+    Send all the followed users to the template
+    """
     actual_user = request.user
     followed_users, following_lst, followers = refacto_followers(actual_user)
 
@@ -114,6 +129,9 @@ def all_users(request):
 
 @login_required(login_url='http://localhost:8000')
 def show_profile(request):
+    """
+    Show the profile of the user or of  the followed user
+    """
     user = request.user
     # Followed and follower
     followed_user = user.following.all()
@@ -130,6 +148,12 @@ def show_profile(request):
 # Searching user by initials
 @login_required(login_url='http://localhost:8000')
 def search_user(request):
+    """
+    Search user by initials
+    Check if the user is already authenticated
+    Check if the user serched exists and if the initials
+    are at least 2 characters
+    """
     actual_user = request.user
     followed_users, following_lst, followers = refacto_followers(actual_user)
 
@@ -161,39 +185,14 @@ def search_user(request):
     return redirect('all_users')
 
 
-# Show all spcecific user
-@login_required(login_url='http://localhost:8000')
-def other_profile(request, user_id):
-
-    try:
-        other_user = CustomUser.objects.get(uuid=user_id)
-        actual_user = request.user
-    except CustomUser.DoesNotExist:
-        error = 'Cet utilisateur n\'existe pas'
-        return render(request, 'base/home.html', context={'error': error})
-
-    followed_users = UserFollows.objects.filter(user=other_user)
-    followers = UserFollows.objects.filter(followed_user=other_user)
-    followed_user_lst = []
-    followers_lst = []
-    # Get the list of followed users
-    for followed_user in followed_users:
-        followed_user_lst.append(followed_user.followed_user.username)
-
-    # Get the list of followers
-    for follower in followers:
-        followers_lst.append(follower.user.username)
-
-    return render(request, 'users/show.html',
-                  context={'user': other_user,
-                           'followed_user': followed_user_lst,
-                           "followers": followers_lst,
-                           'actual_user': actual_user
-                           })
-
-
 @login_required(login_url='http://localhost:8000')
 def follow_user(request):
+    """
+    Follow a user
+    Check if the user is already authenticated
+    Check if the user you want to follow exists
+    Create the user_follows object
+    """
     # Check if user you want to follow exists
     data = request.POST
     user_id = data.get('user_id')
@@ -215,15 +214,24 @@ def follow_user(request):
 # unfollow an actual user
 @login_required(login_url='http://localhost:8000')
 def unfollow_user(request):
+    """
+    Unfollow a user
+    Check if the user is already authenticated
+    Check if the user you want to unfollow exists
+    Delete the user_follows object
+    """
     actual_user = request.user
     data = request.POST
     followed = data.get('user_id')
+    try:
+        followed_user = UserFollows.objects.filter(
+            user=actual_user,
+            followed_user=followed
+        )
+        followed_user.delete()
+    except UserFollows.DoesNotExist:
+        print("The user you want to unfollow does not exist")
 
-    followed_user = UserFollows.objects.filter(
-        user=actual_user,
-        followed_user=followed
-    )
-    followed_user.delete()
     return redirect('all_users')
 
 
@@ -232,9 +240,13 @@ Ticket part
 '''
 
 
-# Flux
 @login_required(login_url='http://localhost:8000')
 def flux(request):
+    """
+    Show the flux of the user
+    Get your tickets and your reviews, also them of hwo yo're following
+    Create a list of tickets and reviews and send to the template
+    """
     user = request.user
     # Getting the ticket of users follower
     followed = UserFollows.objects.filter(user=user)
@@ -278,6 +290,11 @@ def flux(request):
 
 @login_required(login_url='http://localhost:8000')
 def ticket(request):
+    """
+    Ticket page
+    Check if the user is already authenticated
+    Send the ticket form to the template
+    """
     ticket_form = TicketForm(request.POST or None)
     return render(request, 'tickets/ticket.html',
                   context={'form': ticket_form}
@@ -286,6 +303,12 @@ def ticket(request):
 
 @login_required(login_url='http://localhost:8000')
 def create_ticket(request):
+    """
+    Create a ticket
+    Check if the user is already authenticated
+    Check if the form is valid
+    Create the ticket
+    """
     if request.method == 'POST':
         form = TicketForm(request.POST, request.FILES)
         if form.is_valid():
@@ -307,8 +330,10 @@ def create_ticket(request):
     return redirect('ticket')
 
 
-# Factorizing review form
 def refactor_review_form(request) -> ReviewForm:
+    """
+    Factorizing review form
+    """
     review_form = ReviewForm(request.POST or None)
     # review_form = ReviewForm(initial={'username': user.username})
     return review_form
@@ -316,6 +341,11 @@ def refactor_review_form(request) -> ReviewForm:
 
 @login_required(login_url='http://localhost:8000')
 def my_tickets(request, user_id):
+    """
+    Show the tickets of the user
+    Check if the user is already authenticated
+    Send the tickets of the user to the template
+    """
     user = request.user
     review_form = ReviewForm(request.POST)
     if user_id != user.uuid:
@@ -333,8 +363,11 @@ def my_tickets(request, user_id):
                   )
 
 
-# Page for ticket and review
 def ticket_and_review(request):
+    """
+    Ticket and review page
+    Send the ticket and the review form to the template
+    """
     ticket_form = TicketForm(request.POST or None)
     review_form = ReviewForm(request.POST or None)
 
@@ -349,6 +382,12 @@ def ticket_and_review(request):
 # Creating ticket and review at the same time
 @login_required(login_url='http://localhost:8000')
 def create_tck_rvw(request):
+    """
+    Creating a ticket and a review at the same time
+    Check if the user is already authenticated
+    Check if the forms are valid
+    Create the ticket and the review
+    """
     if request.method == 'POST':
         review_form = ReviewForm(request.POST)
         ticket_form = TicketForm(request.POST, request.FILES)
@@ -395,8 +434,12 @@ def create_tck_rvw(request):
                   )
 
 
-# update ticket
 def update_tck(request):
+    """
+    Check if the user is already authenticated and if the ticket exists
+    Check if the ticket belongs to the user
+    Update the ticket
+    """
     user = request.user
     if request.method == "POST":
         data = request.POST
@@ -430,7 +473,11 @@ def update_tck(request):
 
 
 def update_review(request):
-    # update review created by the user
+    """
+    Check if the user is already authenticated and if the review exists
+    Check if the review belongs to the user
+    Update the review
+    """
     user = request.user
     if request.method == "POST":
         data = request.POST
@@ -456,7 +503,10 @@ def update_review(request):
 
 
 def delete_ticket(request):
-    # delete ticket
+    """
+    Check if it is user is the ticket's owner
+    Delete the ticket
+    """
     data = request.POST
     ticket_id = data.get('ticket_id')
     ticket = Ticket.objects.get(uuid=ticket_id)
@@ -476,7 +526,10 @@ def delete_ticket(request):
 
 
 def delete_review(request):
-    # delete review
+    """
+    Check if it is user is the review's owner
+    Delete the review
+    """
     if request.method == 'POST':
         data = request.POST
         review_id = data.get('review_id')
@@ -499,6 +552,11 @@ Review part
 
 @login_required(login_url='http://localhost:8000')
 def create_review(request):
+    """
+    Check if the user is already authenticated
+    Check if the form is valid
+    Create the review
+    """
     user = request.user
     error = None
     if request.method == 'POST':
@@ -523,12 +581,7 @@ def create_review(request):
                                       body=body,
                                       rating=rating
                                       )
-                # form2 = refactor_review_form(request)
-                # return render(request, 'tickets/all_tickets.html',
-                #               context={'ticket': ticket,
-                #                        'tickets': tickets,
-                #                        'form': form2
-                #                        })
+
                 return redirect('flux')
 
         except Ticket.DoesNotExist:
